@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solidus — Institutional Stablecoin Infrastructure</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #0a0f1c;
+  --bg2: #0e1529;
+  --blue: #1a3a6b;
+  --blue-light: #2a5a9b;
+  --gold: #d4a843;
+  --gold-light: #e8c96a;
+  --white: #f0f0f0;
+  --gray: #8899aa;
+  --red: #e05555;
+  --green: #4ecb71;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Inter', -apple-system, sans-serif;
+  color: var(--white);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* SLIDES CONTAINER */
+.deck {
+  width: 100%; height: 100%;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 60px 80px;
+  opacity: 0;
+  transform: translateX(60px);
+  pointer-events: none;
+  transition: opacity 0.6s cubic-bezier(0.4,0,0.2,1), transform 0.6s cubic-bezier(0.4,0,0.2,1);
+  overflow-y: auto;
+}
+
+.slide.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: all;
+}
+
+.slide.exit-left {
+  opacity: 0;
+  transform: translateX(-60px);
+}
+
+/* PROGRESS BAR */
+.progress-bar {
+  position: fixed;
+  bottom: 0; left: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  transition: width 0.5s ease;
+  z-index: 100;
+}
+
+/* SLIDE COUNTER */
+.slide-counter {
+  position: fixed;
+  bottom: 16px; right: 24px;
+  font-size: 13px;
+  color: var(--gray);
+  z-index: 100;
+  font-weight: 500;
+  letter-spacing: 1px;
+}
+
+/* NAV ARROWS */
+.nav-arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px; height: 48px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 50%;
+  color: var(--gray);
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.25s;
+  backdrop-filter: blur(8px);
+}
+.nav-arrow:hover { background: rgba(212,168,67,0.15); color: var(--gold); border-color: var(--gold); }
+.nav-prev { left: 20px; }
+.nav-next { right: 20px; }
+
+/* SPEAKER NOTES */
+.speaker-notes {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(10,15,28,0.97);
+  border-top: 1px solid rgba(212,168,67,0.3);
+  padding: 20px 40px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--gray);
+  z-index: 200;
+  transform: translateY(100%);
+  transition: transform 0.35s ease;
+  max-height: 30vh;
+  overflow-y: auto;
+  backdrop-filter: blur(12px);
+}
+.speaker-notes.visible { transform: translateY(0); }
+.speaker-notes .label { color: var(--gold); font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; }
+
+/* TYPOGRAPHY */
+.slide h1 { font-size: clamp(36px, 5vw, 72px); font-weight: 900; letter-spacing: -2px; line-height: 1.05; margin-bottom: 16px; }
+.slide h2 { font-size: clamp(28px, 3.5vw, 56px); font-weight: 800; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 24px; }
+.slide h3 { font-size: clamp(18px, 2vw, 28px); font-weight: 600; color: var(--gray); margin-bottom: 16px; }
+.slide p { font-size: clamp(16px, 1.4vw, 22px); line-height: 1.6; color: var(--gray); max-width: 700px; }
+
+.gold { color: var(--gold); }
+.blue { color: var(--blue-light); }
+.big-number { font-size: clamp(60px, 10vw, 140px); font-weight: 900; letter-spacing: -4px; line-height: 1; }
+.subtitle { font-size: clamp(14px, 1.2vw, 18px); font-weight: 400; color: var(--gray); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 24px; }
+
+/* CONTENT LAYOUTS */
+.three-cols {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  width: 100%;
+  max-width: 1100px;
+  margin-top: 40px;
+}
+
+.card {
+  background: linear-gradient(135deg, rgba(26,58,107,0.2), rgba(10,15,28,0.8));
+  border: 1px solid rgba(26,58,107,0.3);
+  border-radius: 16px;
+  padding: 36px 28px;
+  text-align: center;
+  transition: all 0.3s;
+}
+.card:hover { border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 12px 40px rgba(212,168,67,0.1); }
+.card .icon { font-size: 48px; margin-bottom: 20px; display: block; }
+.card h4 { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--white); }
+.card p { font-size: 15px; color: var(--gray); line-height: 1.5; }
+
+/* FLOW STEPS */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-top: 40px;
+  width: 100%;
+  max-width: 1100px;
+}
+.flow-step {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(26,58,107,0.25), rgba(10,15,28,0.9));
+  border: 1px solid rgba(26,58,107,0.4);
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+}
+.flow-step .step-num { font-size: 48px; font-weight: 900; color: var(--gold); opacity: 0.3; }
+.flow-step h4 { font-size: 22px; font-weight: 700; margin: 8px 0; }
+.flow-step p { font-size: 14px; color: var(--gray); line-height: 1.5; }
+.flow-arrow { font-size: 28px; color: var(--gold); opacity: 0.5; flex-shrink: 0; }
+
+/* TAM SAM SOM CIRCLES */
+.tam-circles {
+  position: relative;
+  width: 500px; height: 500px;
+  margin-top: 20px;
+}
+.tam-circle {
+  position: absolute;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s;
+}
+.tam-circle:hover { transform: scale(1.03); }
+.tam-outer {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, rgba(26,58,107,0.15), rgba(26,58,107,0.05));
+  border: 2px solid rgba(26,58,107,0.4);
+  top: 0; left: 0;
+}
+.tam-mid {
+  width: 320px; height: 320px;
+  background: radial-gradient(circle, rgba(26,58,107,0.25), rgba(26,58,107,0.1));
+  border: 2px solid rgba(42,90,155,0.5);
+  top: 90px; left: 90px;
+}
+.tam-inner {
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(212,168,67,0.2), rgba(212,168,67,0.05));
+  border: 2px solid var(--gold);
+  top: 170px; left: 170px;
+  box-shadow: 0 0 40px rgba(212,168,67,0.15);
+}
+.tam-circle .label { font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--gray); }
+.tam-circle .value { font-size: clamp(24px, 3vw, 42px); font-weight: 900; margin-top: 4px; }
+.tam-outer .value { color: rgba(255,255,255,0.4); }
+.tam-mid .value { color: rgba(255,255,255,0.7); }
+.tam-inner .value { color: var(--gold); }
+
+/* MARKET LEGEND */
+.market-layout {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+  width: 100%;
+  max-width: 1100px;
+}
+.market-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.legend-dot {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+
+/* REVENUE TABLE */
+.revenue-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 32px;
+}
+.revenue-card {
+  background: linear-gradient(135deg, rgba(26,58,107,0.2), rgba(10,15,28,0.8));
+  border: 1px solid rgba(26,58,107,0.3);
+  border-radius: 16px;
+  padding: 28px 24px;
+}
+.revenue-card .tag { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); margin-bottom: 12px; }
+.revenue-card h4 { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+.revenue-card p { font-size: 14px; color: var(--gray); line-height: 1.5; }
+
+/* METRICS ROW */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 36px;
+}
+.metric-box {
+  background: linear-gradient(135deg, rgba(26,58,107,0.15), rgba(10,15,28,0.7));
+  border: 1px solid rgba(26,58,107,0.3);
+  border-radius: 16px;
+  padding: 28px 20px;
+  text-align: center;
+}
+.metric-box .metric-val { font-size: 36px; font-weight: 900; color: var(--gold); margin-bottom: 6px; }
+.metric-box .metric-label { font-size: 13px; color: var(--gray); font-weight: 500; }
+
+/* TIMELINE */
+.timeline {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 32px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 24px; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--gold), var(--blue), rgba(26,58,107,0.3));
+}
+.timeline-items {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+.timeline-item {
+  text-align: center;
+  padding-top: 48px;
+  position: relative;
+}
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  top: 16px; left: 50%;
+  transform: translateX(-50%);
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 3px solid var(--blue);
+}
+.timeline-item:first-child::before { border-color: var(--gold); background: var(--gold); box-shadow: 0 0 16px rgba(212,168,67,0.5); }
+.timeline-item h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--gold); }
+.timeline-item p { font-size: 13px; color: var(--gray); line-height: 1.5; }
+
+/* COMPETITIVE CHART */
+.comp-chart {
+  position: relative;
+  width: 600px; height: 400px;
+  margin-top: 24px;
+  border-left: 2px solid rgba(255,255,255,0.1);
+  border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+.comp-chart .axis-label {
+  position: absolute;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.axis-x { bottom: -30px; left: 50%; transform: translateX(-50%); }
+.axis-y { top: 50%; left: -24px; transform: translateY(-50%) rotate(-90deg); white-space: nowrap; }
+.comp-dot {
+  position: absolute;
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  transition: transform 0.3s;
+  cursor: default;
+}
+.comp-dot:hover { transform: scale(1.15); }
+.comp-dot.solidus-dot {
+  background: radial-gradient(circle, rgba(212,168,67,0.3), rgba(212,168,67,0.1));
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  width: 72px; height: 72px;
+  font-size: 12px;
+  box-shadow: 0 0 30px rgba(212,168,67,0.2);
+}
+.comp-dot.other-dot {
+  background: rgba(26,58,107,0.3);
+  border: 1px solid rgba(42,90,155,0.5);
+  color: var(--gray);
+}
+
+/* TEAM CARDS */
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
+  width: 100%;
+  max-width: 900px;
+  margin-top: 36px;
+}
+.team-card {
+  background: linear-gradient(135deg, rgba(26,58,107,0.2), rgba(10,15,28,0.8));
+  border: 1px solid rgba(26,58,107,0.3);
+  border-radius: 20px;
+  padding: 36px 24px;
+  text-align: center;
+  transition: all 0.3s;
+}
+.team-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+.team-avatar {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--gold));
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--bg);
+}
+.team-card h4 { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.team-card .role { font-size: 13px; color: var(--gold); font-weight: 600; margin-bottom: 12px; }
+.team-card p { font-size: 13px; color: var(--gray); line-height: 1.5; }
+
+/* ASK SLIDE */
+.ask-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  width: 100%;
+  max-width: 1000px;
+  margin-top: 32px;
+}
+.ask-amount {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.funds-chart {
+  width: 100%;
+}
+.fund-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.fund-bar-bg {
+  flex: 1;
+  height: 28px;
+  background: rgba(26,58,107,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.fund-bar {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--gold), var(--gold-light));
+  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  width: 0;
+}
+.fund-label { font-size: 13px; color: var(--gray); width: 140px; text-align: right; flex-shrink: 0; }
+.fund-pct { font-size: 13px; color: var(--gold); font-weight: 700; width: 40px; flex-shrink: 0; }
+
+/* DEMO SCREENSHOTS */
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  width: 100%;
+  max-width: 1100px;
+  margin-top: 28px;
+}
+.demo-card {
+  background: linear-gradient(135deg, rgba(14,21,41,0.9), rgba(10,15,28,0.95));
+  border: 1px solid rgba(26,58,107,0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.demo-card:hover { border-color: var(--gold); transform: translateY(-3px); }
+.demo-screen {
+  height: 120px;
+  background: linear-gradient(135deg, var(--bg2), rgba(26,58,107,0.15));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid rgba(26,58,107,0.2);
+  position: relative;
+  overflow: hidden;
+}
+.demo-screen .mock-dots { position: absolute; top: 8px; left: 10px; display: flex; gap: 5px; }
+.demo-screen .mock-dots span { width: 7px; height: 7px; border-radius: 50%; }
+.demo-screen .mock-dots span:nth-child(1) { background: #e05555; }
+.demo-screen .mock-dots span:nth-child(2) { background: #e8c96a; }
+.demo-screen .mock-dots span:nth-child(3) { background: #4ecb71; }
+.demo-screen .mock-ui { font-size: 32px; opacity: 0.3; }
+.demo-card .demo-info { padding: 14px 16px; }
+.demo-card .demo-info h4 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+.demo-card .demo-info p { font-size: 12px; color: var(--gray); line-height: 1.4; }
+
+/* QUOTE */
+.quote {
+  font-size: clamp(20px, 2.2vw, 32px);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--gray);
+  max-width: 800px;
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 24px;
+  position: relative;
+  padding: 0 40px;
+}
+.quote::before {
+  content: '\201C';
+  position: absolute;
+  top: -20px; left: 0;
+  font-size: 72px;
+  color: var(--gold);
+  opacity: 0.3;
+  font-style: normal;
+}
+
+/* LOGO */
+.logo-mark {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.logo-icon {
+  width: 64px; height: 64px;
+  border: 3px solid var(--gold);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--gold);
+  background: rgba(212,168,67,0.05);
+}
+.logo-text {
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+}
+
+/* CLOSE SLIDE */
+.closing-logo {
+  font-size: 72px;
+  font-weight: 900;
+  letter-spacing: 8px;
+  color: var(--gold);
+  margin-bottom: 32px;
+  text-transform: uppercase;
+}
+.contact-row {
+  display: flex;
+  gap: 40px;
+  margin-top: 24px;
+}
+.contact-item {
+  font-size: 15px;
+  color: var(--gray);
+  font-weight: 500;
+}
+
+/* ANIMATED COUNTER */
+.counter[data-counted="false"] { opacity: 0.3; }
+
+/* KEYBOARD HINT */
+.keyboard-hint {
+  position: fixed;
+  top: 16px; right: 24px;
+  font-size: 11px;
+  color: rgba(136,153,170,0.4);
+  z-index: 100;
+  letter-spacing: 1px;
+}
+.keyboard-hint kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  margin: 0 2px;
+}
+
+/* GRADIENT OVERLAYS */
+.slide::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(26,58,107,0.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+  .slide { padding: 40px 32px; }
+  .three-cols, .revenue-grid, .team-grid, .demo-grid { grid-template-columns: 1fr; max-width: 500px; }
+  .flow { flex-direction: column; }
+  .flow-arrow { transform: rotate(90deg); }
+  .metrics-row { grid-template-columns: repeat(2, 1fr); }
+  .timeline-items { grid-template-columns: repeat(2, 1fr); }
+  .market-layout { flex-direction: column; }
+  .tam-circles { width: 300px; height: 300px; }
+  .tam-outer { width: 300px; height: 300px; }
+  .tam-mid { width: 200px; height: 200px; top: 50px; left: 50px; }
+  .tam-inner { width: 100px; height: 100px; top: 100px; left: 100px; }
+  .comp-chart { width: 100%; height: 300px; }
+  .ask-grid { grid-template-columns: 1fr; }
+  .nav-arrow { display: none; }
+}
+
+/* Subtle entrance animations per slide */
+.slide.active .animate-in {
+  animation: fadeUp 0.7s cubic-bezier(0.4,0,0.2,1) both;
+}
+.slide.active .animate-in:nth-child(1) { animation-delay: 0.1s; }
+.slide.active .animate-in:nth-child(2) { animation-delay: 0.25s; }
+.slide.active .animate-in:nth-child(3) { animation-delay: 0.4s; }
+.slide.active .animate-in:nth-child(4) { animation-delay: 0.55s; }
+.slide.active .animate-in:nth-child(5) { animation-delay: 0.7s; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(212,168,67,0.15); }
+  50% { box-shadow: 0 0 40px rgba(212,168,67,0.3); }
+}
+
+/* Fullscreen hint */
+.fs-hint {
+  position: fixed;
+  top: 16px; left: 24px;
+  font-size: 11px;
+  color: rgba(136,153,170,0.3);
+  z-index: 100;
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+
+  <!-- SLIDE 1: TITLE -->
+  <div class="slide active" data-notes="Walk on stage. Pause. Let the silence build for two seconds. Then deliver the one-liner like it's obvious. Own the room before you say a word.">
+    <div class="logo-mark animate-in">
+      <div class="logo-icon">S</div>
+      <div class="logo-text">Solidus</div>
+    </div>
+    <div class="subtitle animate-in">Institutional Stablecoin Infrastructure</div>
+    <h2 class="animate-in" style="text-align:center; max-width: 800px;">Built on <span class="gold">Solana</span></h2>
+    <p class="animate-in" style="text-align:center; margin-top:20px; font-size: clamp(16px,1.5vw,22px); font-weight:300;">
+      Making stablecoins safe enough for the world's largest institutions.<br>Fast enough for the world's most demanding blockchain.
+    </p>
+    <div style="margin-top: 48px; font-size: 13px; color: var(--gray); letter-spacing: 2px; opacity:0.5;" class="animate-in">STABLEHACKS 2026 &middot; DORAHACKS</div>
+  </div>
+
+  <!-- SLIDE 2: PROBLEM -->
+  <div class="slide" data-notes="This is the tension slide. Paint the picture of a world where trillions are stuck. Speak slowly on the three bullets. The quote is your anchor. Pause after reading it. Let the audience feel the gap. You are not selling a product yet. You are selling a problem.">
+    <div class="subtitle animate-in">The Problem</div>
+    <div class="big-number gold animate-in" style="margin-bottom: 8px;"><span class="counter" data-target="4" data-prefix="$" data-suffix="T+" data-counted="false">$0</span></div>
+    <h2 class="animate-in" style="text-align:center;">sitting on the sidelines</h2>
+    <div class="three-cols" style="margin-top: 48px;">
+      <div class="card animate-in">
+        <span class="icon">&#128274;</span>
+        <h4>No Compliance Layer</h4>
+        <p>KYC/AML is an afterthought. Regulators see liability.</p>
+      </div>
+      <div class="card animate-in">
+        <span class="icon">&#9888;&#65039;</span>
+        <h4>No Controls</h4>
+        <p>CFOs need whitelists, limits, permissions. They get nothing.</p>
+      </div>
+      <div class="card animate-in">
+        <span class="icon">&#128196;</span>
+        <h4>No Transparency</h4>
+        <p>Reserve attestations arrive as PDFs. Quarterly. In 2026.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 3: SOLUTION -->
+  <div class="slide" data-notes="Shift your energy. The problem was heavy. The solution is clean. On 'every block' - slow down and repeat it. That contrast (quarterly vs. every block) is the rhetorical kill shot.">
+    <div class="subtitle animate-in">The Solution</div>
+    <h2 class="animate-in" style="text-align:center;">The Missing Layer</h2>
+    <p class="animate-in" style="text-align:center; margin-bottom: 40px;">Protocol-level compliance engine for stablecoins.</p>
+    <div class="three-cols">
+      <div class="card animate-in">
+        <span class="icon">&#128737;&#65039;</span>
+        <h4>Programmable Compliance</h4>
+        <p>KYC/AML baked into the mint. Structural. Not optional.</p>
+      </div>
+      <div class="card animate-in">
+        <span class="icon">&#9881;&#65039;</span>
+        <h4>Institutional Controls</h4>
+        <p>Role-based access, velocity limits. Enforced on-chain.</p>
+      </div>
+      <div class="card animate-in">
+        <span class="icon">&#128200;</span>
+        <h4>Real-Time Reserves</h4>
+        <p>Oracle-verified every block. Not every quarter. <span class="gold">Every block.</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 4: HOW IT WORKS -->
+  <div class="slide" data-notes="Simplicity sells. Three steps on screen, three sentences each. The key phrase: 'the rules travel with the token.' That is the architectural insight that separates Solidus from wrappers and middleware.">
+    <div class="subtitle animate-in">How It Works</div>
+    <h2 class="animate-in" style="text-align:center;">Three steps. That's it.</h2>
+    <div class="flow">
+      <div class="flow-step animate-in">
+        <div class="step-num">01</div>
+        <h4>Configure</h4>
+        <p>Define compliance rules. KYC tiers, transfer limits, whitelists. Five minutes.</p>
+      </div>
+      <div class="flow-arrow animate-in">&rarr;</div>
+      <div class="flow-step animate-in">
+        <div class="step-num">02</div>
+        <h4>Issue</h4>
+        <p>Mint via Solidus on Solana. Compliance rules embedded at token level. Rules travel with the token.</p>
+      </div>
+      <div class="flow-arrow animate-in">&rarr;</div>
+      <div class="flow-step animate-in">
+        <div class="step-num">03</div>
+        <h4>Operate</h4>
+        <p>Every transfer validates on-chain. Real-time reserves via Pyth. Full audit trail. Zero trust.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 5: DEMO -->
+  <div class="slide" data-notes="Walk through each screenshot. Spend the most time on the transfer hook -- a transfer getting blocked on-chain, in real-time, with no human intervention. That is the product.">
+    <div class="subtitle animate-in">Product Demo</div>
+    <h2 class="animate-in" style="text-align:center;">See It Working</h2>
+    <div class="demo-grid">
+      <div class="demo-card animate-in">
+        <div class="demo-screen">
+          <div class="mock-dots"><span></span><span></span><span></span></div>
+          <div class="mock-ui">&#128202;</div>
+        </div>
+        <div class="demo-info">
+          <h4>Dashboard Overview</h4>
+          <p>Total supply, active wallets, compliance status, reserve ratio at a glance.</p>
+        </div>
+      </div>
+      <div class="demo-card animate-in">
+        <div class="demo-screen">
+          <div class="mock-dots"><span></span><span></span><span></span></div>
+          <div class="mock-ui">&#9881;&#65039;</div>
+        </div>
+        <div class="demo-info">
+          <h4>Compliance Config</h4>
+          <p>Set KYC tiers, velocity limits, whitelists. Banker-grade UI.</p>
+        </div>
+      </div>
+      <div class="demo-card animate-in">
+        <div class="demo-screen">
+          <div class="mock-dots"><span></span><span></span><span></span></div>
+          <div class="mock-ui">&#9889;</div>
+        </div>
+        <div class="demo-info">
+          <h4>Minting Flow</h4>
+          <p>One-click mint. Compliance check, reserve verify, tokens appear.</p>
+        </div>
+      </div>
+      <div class="demo-card animate-in">
+        <div class="demo-screen">
+          <div class="mock-dots"><span></span><span></span><span></span></div>
+          <div class="mock-ui" style="color: var(--green); opacity: 0.5;">&#10003; &#10007;</div>
+        </div>
+        <div class="demo-info">
+          <h4>Transfer Hook</h4>
+          <p>On-chain compliance enforcement. Non-KYC'd? <span style="color:var(--red);">Rejected.</span> No human needed.</p>
+        </div>
+      </div>
+      <div class="demo-card animate-in">
+        <div class="demo-screen">
+          <div class="mock-dots"><span></span><span></span><span></span></div>
+          <div class="mock-ui">&#128279;</div>
+        </div>
+        <div class="demo-info">
+          <h4>Reserve Transparency</h4>
+          <p>Pyth oracle feed. Backing ratio live. Verify on-chain in one click.</p>
+        </div>
+      </div>
+      <div class="demo-card animate-in">
+        <div class="demo-screen">
+          <div class="mock-dots"><span></span><span></span><span></span></div>
+          <div class="mock-ui">&#128203;</div>
+        </div>
+        <div class="demo-info">
+          <h4>Audit Trail</h4>
+          <p>Every action logged. Full history. Exportable compliance reports.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 6: MARKET SIZE -->
+  <div class="slide" data-notes="Don't apologize for big numbers. TAM is real -- cite Citi, BCG, Bernstein. SOM is conservative and credible. 'We need 3 to 5 partners, not 3,000 users.' This should feel inevitable, not aspirational.">
+    <div class="subtitle animate-in">Market Size</div>
+    <h2 class="animate-in" style="text-align:center; margin-bottom: 32px;">Measured in trillions.</h2>
+    <div class="market-layout">
+      <div class="tam-circles animate-in">
+        <div class="tam-circle tam-outer">
+          <span class="label">TAM</span>
+          <span class="value">$4.5T</span>
+        </div>
+        <div class="tam-circle tam-mid">
+          <span class="label">SAM</span>
+          <span class="value">$320B</span>
+        </div>
+        <div class="tam-circle tam-inner" style="animation: pulse 3s ease-in-out infinite;">
+          <span class="label">SOM</span>
+          <span class="value">$12B</span>
+        </div>
+      </div>
+      <div class="market-legend animate-in">
+        <div class="legend-item">
+          <div class="legend-dot" style="background: rgba(26,58,107,0.5);"></div>
+          <div>
+            <div style="font-weight:700; font-size:15px;">$4.5T &mdash; TAM</div>
+            <div style="font-size:13px; color:var(--gray); margin-top:4px;">Global institutional stablecoin settlement (2027)</div>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--blue-light);"></div>
+          <div>
+            <div style="font-weight:700; font-size:15px;">$320B &mdash; SAM</div>
+            <div style="font-size:13px; color:var(--gray); margin-top:4px;">Institutions exploring on-chain settlement</div>
+          </div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background: var(--gold);"></div>
+          <div>
+            <div style="font-weight:700; font-size:15px;">$12B &mdash; SOM</div>
+            <div style="font-size:13px; color:var(--gray); margin-top:4px;">3-5 institutional partners, Year 1</div>
+          </div>
+        </div>
+        <div style="margin-top:12px; padding: 16px; background: rgba(212,168,67,0.05); border-left: 3px solid var(--gold); border-radius: 4px;">
+          <p style="font-size:13px; color:var(--gray); line-height:1.5;">Stablecoins crossed $200B market cap in 2025. Institutional adoption is the next wave.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 7: BUSINESS MODEL -->
+  <div class="slide" data-notes="Basis points model is familiar -- it is how traditional payment rails work. That makes it credible. Enterprise licensing is high-margin and sticky. Reframe: Circle, Tether, PayPal are not competitors. They are the market.">
+    <div class="subtitle animate-in">Business Model</div>
+    <h2 class="animate-in" style="text-align:center;">Three revenue engines.</h2>
+    <div class="revenue-grid">
+      <div class="revenue-card animate-in">
+        <div class="tag">Primary</div>
+        <h4>Protocol Fees</h4>
+        <p>1-3 basis points on issuance & redemption. At $12B SOM: <span class="gold">$2.4M ARR</span></p>
+      </div>
+      <div class="revenue-card animate-in">
+        <div class="tag">Secondary</div>
+        <h4>Enterprise Licensing</h4>
+        <p>$100K-$500K/year per institution. Custom compliance, SLA guarantees. <span class="gold">High margin, sticky.</span></p>
+      </div>
+      <div class="revenue-card animate-in">
+        <div class="tag">Growth</div>
+        <h4>SDK & API</h4>
+        <p>Free dev tier drives adoption. Production: usage-based. Compliance-as-a-Service for existing projects.</p>
+      </div>
+    </div>
+    <div class="quote animate-in" style="margin-top: 36px; font-size: 18px;">
+      We don't compete with stablecoins. We make them institutional-grade. Every major issuer is a potential customer.
+    </div>
+  </div>
+
+  <!-- SLIDE 8: UNIT ECONOMICS -->
+  <div class="slide" data-notes="LTV:CAC of 12-25x is exceptional. Gross margins of 85-92% are software-grade. CAC payback in 3-6 months. These numbers tell the story of a capital-efficient business.">
+    <div class="subtitle animate-in">Unit Economics</div>
+    <h2 class="animate-in" style="text-align:center;">Built for capital efficiency.</h2>
+    <div class="metrics-row">
+      <div class="metric-box animate-in">
+        <div class="metric-val"><span class="counter" data-target="25" data-suffix="x" data-counted="false">0</span></div>
+        <div class="metric-label">LTV:CAC Ratio</div>
+      </div>
+      <div class="metric-box animate-in">
+        <div class="metric-val"><span class="counter" data-target="90" data-suffix="%" data-counted="false">0</span></div>
+        <div class="metric-label">Gross Margin</div>
+      </div>
+      <div class="metric-box animate-in">
+        <div class="metric-val"><span class="counter" data-target="5" data-suffix="M" data-prefix="$" data-counted="false">0</span></div>
+        <div class="metric-label">Year 1 ARR Target</div>
+      </div>
+      <div class="metric-box animate-in">
+        <div class="metric-val"><span class="counter" data-target="4" data-suffix="mo" data-counted="false">0</span></div>
+        <div class="metric-label">CAC Payback</div>
+      </div>
+    </div>
+    <div class="three-cols" style="margin-top: 32px; max-width: 900px;">
+      <div style="text-align:center;" class="animate-in">
+        <div style="font-size:28px; font-weight:800; color:var(--gold);">$1.25M</div>
+        <div style="font-size:13px; color:var(--gray); margin-top:6px;">LTV per enterprise customer</div>
+        <div style="font-size:12px; color:var(--gray); margin-top:4px;">$250K/yr x 5yr avg retention</div>
+      </div>
+      <div style="text-align:center;" class="animate-in">
+        <div style="font-size:28px; font-weight:800; color:var(--gold);">$50-100K</div>
+        <div style="font-size:13px; color:var(--gray); margin-top:6px;">CAC enterprise channel</div>
+        <div style="font-size:12px; color:var(--gray); margin-top:4px;">High ACV justifies cycle</div>
+      </div>
+      <div style="text-align:center;" class="animate-in">
+        <div style="font-size:28px; font-weight:800; color:var(--gold);">$25-40M</div>
+        <div style="font-size:13px; color:var(--gray); margin-top:6px;">Year 3 ARR projection</div>
+        <div style="font-size:12px; color:var(--gray); margin-top:4px;">20-30 institutional partners</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 9: TRACTION / ROADMAP -->
+  <div class="slide" data-notes="Start with what is real. Point to the working demo. 'This isn't a whitepaper. This is working code on Solana Devnet, built in a hackathon weekend.' Then walk forward. Keep this moving -- 45 seconds max.">
+    <div class="subtitle animate-in">Traction & Roadmap</div>
+    <h2 class="animate-in" style="text-align:center;">This is not a whitepaper.</h2>
+    <div class="timeline animate-in">
+      <div class="timeline-items">
+        <div class="timeline-item">
+          <h4>NOW</h4>
+          <p>Working on Devnet. Transfer hooks, KYC verification, Pyth oracles, dashboard live.</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Q2 2026</h4>
+          <p>Mainnet beta. Audited contracts. First pilot institution. SDK v1.</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Q3 2026</h4>
+          <p>3-5 institutional partners. Compliance API launch. SOC 2 started.</p>
+        </div>
+        <div class="timeline-item">
+          <h4>Q4 2026</h4>
+          <p>Multi-stablecoin support. Cross-chain exploration. Series A: $5M.</p>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top: 40px; display: flex; gap: 24px; flex-wrap: wrap; justify-content: center;" class="animate-in">
+      <div style="padding: 10px 20px; background: rgba(78,203,113,0.1); border: 1px solid rgba(78,203,113,0.3); border-radius: 8px; font-size: 13px; color: var(--green);">&#10003; Anchor program deployed</div>
+      <div style="padding: 10px 20px; background: rgba(78,203,113,0.1); border: 1px solid rgba(78,203,113,0.3); border-radius: 8px; font-size: 13px; color: var(--green);">&#10003; Token-2022 transfer hooks</div>
+      <div style="padding: 10px 20px; background: rgba(78,203,113,0.1); border: 1px solid rgba(78,203,113,0.3); border-radius: 8px; font-size: 13px; color: var(--green);">&#10003; Pyth oracle integration</div>
+      <div style="padding: 10px 20px; background: rgba(78,203,113,0.1); border: 1px solid rgba(78,203,113,0.3); border-radius: 8px; font-size: 13px; color: var(--green);">&#10003; Dashboard prototype</div>
+    </div>
+  </div>
+
+  <!-- SLIDE 10: COMPETITIVE LANDSCAPE -->
+  <div class="slide" data-notes="The chart does the heavy lifting. Don't read every detail. Point to: on-chain compliance (everyone else is off-chain), real-time reserves (everyone else is quarterly), and cost ($0.001 vs dollars). 'First mover' is time-sensitive. Say it with urgency.">
+    <div class="subtitle animate-in">Competitive Landscape</div>
+    <h2 class="animate-in" style="text-align:center; margin-bottom: 16px;">Unoccupied territory.</h2>
+    <div style="display:flex; align-items:center; gap:48px; width:100%; max-width:1100px; flex-wrap: wrap; justify-content:center;">
+      <div class="comp-chart animate-in">
+        <div class="axis-label axis-x">Protocol-Level Compliance &rarr;</div>
+        <div class="axis-label axis-y">Speed & Cost Efficiency &rarr;</div>
+        <!-- Grid lines -->
+        <div style="position:absolute; top:0; left:50%; width:1px; height:100%; background:rgba(255,255,255,0.03);"></div>
+        <div style="position:absolute; top:50%; left:0; width:100%; height:1px; background:rgba(255,255,255,0.03);"></div>
+        <!-- Dots -->
+        <div class="comp-dot solidus-dot" style="right: 40px; top: 30px;">Solidus</div>
+        <div class="comp-dot other-dot" style="left: 160px; top: 180px; font-size:9px;">Circle<br>CCTP</div>
+        <div class="comp-dot other-dot" style="left: 80px; top: 140px; font-size:9px;">Fire-<br>blocks</div>
+        <div class="comp-dot other-dot" style="left: 200px; top: 220px; font-size:9px;">Paxos</div>
+        <div class="comp-dot other-dot" style="left: 40px; top: 260px; font-size:9px;">Chain-<br>alysis</div>
+      </div>
+      <div class="animate-in" style="max-width: 380px;">
+        <div style="margin-bottom: 20px;">
+          <div style="font-weight:700; font-size:16px; color:var(--gold); margin-bottom:8px;">Our Moats</div>
+        </div>
+        <div style="margin-bottom: 16px; padding-left: 16px; border-left: 2px solid var(--gold);">
+          <div style="font-weight:700; font-size:14px;">First Mover</div>
+          <div style="font-size:13px; color:var(--gray);">Token-2022 institutional compliance. Window: 12-18 months.</div>
+        </div>
+        <div style="margin-bottom: 16px; padding-left: 16px; border-left: 2px solid var(--blue-light);">
+          <div style="font-weight:700; font-size:14px;">Architectural Advantage</div>
+          <div style="font-size:13px; color:var(--gray);">Protocol-level, not application-level. Can't be replicated with a sprint.</div>
+        </div>
+        <div style="margin-bottom: 16px; padding-left: 16px; border-left: 2px solid var(--blue-light);">
+          <div style="font-weight:700; font-size:14px;">Extreme Switching Costs</div>
+          <div style="font-size:13px; color:var(--gray);">Compliance rulesets deeply embedded. Regulatory re-approval required to migrate.</div>
+        </div>
+        <div style="padding-left: 16px; border-left: 2px solid var(--blue-light);">
+          <div style="font-weight:700; font-size:14px;">Solana-Native</div>
+          <div style="font-size:13px; color:var(--gray);">400ms finality. $0.001 per txn. Fastest DeFi ecosystem.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 11: TEAM -->
+  <div class="slide" data-notes="Keep it human and brief. The key message: this team built a working protocol in a weekend. That says more than any resume. Let the product speak.">
+    <div class="subtitle animate-in">The Team</div>
+    <h2 class="animate-in" style="text-align:center;">Built and shipped in a weekend.</h2>
+    <div class="team-grid">
+      <div class="team-card animate-in">
+        <div class="team-avatar">&#9883;</div>
+        <h4>Protocol Engineer</h4>
+        <div class="role">CTO</div>
+        <p>Anchor/Rust programs, Token-2022 integration. Deep Solana expertise. Security-first.</p>
+      </div>
+      <div class="team-card animate-in">
+        <div class="team-avatar">&#9672;</div>
+        <h4>Frontend Engineer</h4>
+        <div class="role">Product</div>
+        <p>Dashboard UI, wallet integration. Institutional-grade user experience.</p>
+      </div>
+      <div class="team-card animate-in">
+        <div class="team-avatar">&#9670;</div>
+        <h4>Product & Design</h4>
+        <div class="role">CEO / BD</div>
+        <p>UX architecture, go-to-market strategy. Institutional partnerships. Regulatory fluency.</p>
+      </div>
+    </div>
+    <div style="margin-top: 36px; text-align:center;" class="animate-in">
+      <p style="font-size: 15px; color: var(--gray);">Combined expertise across blockchain infrastructure, institutional finance, and developer tooling.</p>
+      <p style="font-size: 15px; color: var(--gold); margin-top: 8px; font-weight: 600;">Velocity is real, not theoretical.</p>
+    </div>
+  </div>
+
+  <!-- SLIDE 12: THE ASK -->
+  <div class="slide" data-notes="Be direct. The hackathon ask is straightforward. The post-hackathon ask is for the right people in the room. '$500K pre-seed' is specific and credible. You are not begging. You are offering a seat.">
+    <div class="subtitle animate-in">The Ask</div>
+    <h2 class="animate-in" style="text-align:center;">Join us at the ground floor.</h2>
+    <div class="ask-grid">
+      <div class="ask-amount animate-in" style="text-align:center;">
+        <div style="font-size: 14px; color:var(--gray); letter-spacing:2px; text-transform:uppercase; margin-bottom: 8px;">Seed Round</div>
+        <div style="font-size: clamp(48px,7vw,80px); font-weight:900; color:var(--gold); letter-spacing: -2px;"><span class="counter" data-target="5" data-prefix="$" data-suffix="M" data-counted="false">$0</span></div>
+        <div style="font-size: 15px; color:var(--gray); margin-top:8px;">$20-30M post-money valuation</div>
+        <div style="margin-top: 32px; padding: 20px 24px; background: rgba(212,168,67,0.06); border: 1px solid rgba(212,168,67,0.2); border-radius: 12px; text-align:left;">
+          <div style="font-size:13px; font-weight:700; color:var(--gold); margin-bottom:12px; letter-spacing:1px;">WHAT YOU GET</div>
+          <p style="font-size:14px; color:var(--gray); line-height:1.6;">Early access to the protocol that becomes the compliance standard for institutional stablecoins on Solana. Ground floor in a <span class="gold">$4.5T market</span>.</p>
+        </div>
+      </div>
+      <div class="funds-chart animate-in">
+        <div style="font-size:14px; font-weight:700; margin-bottom:20px; color:var(--gold); letter-spacing:1px;">USE OF FUNDS</div>
+        <div class="fund-row">
+          <div class="fund-label">Engineering</div>
+          <div class="fund-bar-bg"><div class="fund-bar" data-width="80%"></div></div>
+          <div class="fund-pct">40%</div>
+        </div>
+        <div class="fund-row">
+          <div class="fund-label">Sales & BD</div>
+          <div class="fund-bar-bg"><div class="fund-bar" data-width="40%"></div></div>
+          <div class="fund-pct">20%</div>
+        </div>
+        <div class="fund-row">
+          <div class="fund-label">Compliance</div>
+          <div class="fund-bar-bg"><div class="fund-bar" data-width="30%"></div></div>
+          <div class="fund-pct">15%</div>
+        </div>
+        <div class="fund-row">
+          <div class="fund-label">DevRel</div>
+          <div class="fund-bar-bg"><div class="fund-bar" data-width="20%"></div></div>
+          <div class="fund-pct">10%</div>
+        </div>
+        <div class="fund-row">
+          <div class="fund-label">Operations</div>
+          <div class="fund-bar-bg"><div class="fund-bar" data-width="20%"></div></div>
+          <div class="fund-pct">10%</div>
+        </div>
+        <div class="fund-row">
+          <div class="fund-label">Reserve</div>
+          <div class="fund-bar-bg"><div class="fund-bar" data-width="10%"></div></div>
+          <div class="fund-pct">5%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SLIDE 13: CLOSING -->
+  <div class="slide" data-notes="End where you started -- with conviction. Read the quote slowly. Let 'Solidus makes the answer obvious' land. Then pause. Say 'Thank you' and stop talking. The silence after your last word is part of the presentation.">
+    <div class="closing-logo animate-in">SOLIDUS</div>
+    <div class="quote animate-in">
+      Stablecoins will move more value than Visa within five years. The only question is whether that happens on rails institutions can trust.
+    </div>
+    <h2 class="animate-in" style="text-align:center; margin-top: 40px;">We make the answer <span class="gold">obvious.</span></h2>
+    <div class="contact-row animate-in" style="margin-top: 40px;">
+      <div class="contact-item">solidus.finance</div>
+      <div class="contact-item" style="color: rgba(136,153,170,0.3);">&middot;</div>
+      <div class="contact-item">github.com/solidus</div>
+      <div class="contact-item" style="color: rgba(136,153,170,0.3);">&middot;</div>
+      <div class="contact-item">team@solidus.finance</div>
+    </div>
+    <div style="margin-top: 40px; font-size: 13px; color: rgba(136,153,170,0.4); letter-spacing: 2px;" class="animate-in">
+      BUILT FOR STABLEHACKS 2026 &middot; BUILT TO LAST
+    </div>
+  </div>
+
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav-arrow nav-prev" onclick="navigate(-1)">&#8592;</div>
+<div class="nav-arrow nav-next" onclick="navigate(1)">&#8594;</div>
+
+<!-- PROGRESS -->
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-counter" id="slideCounter"></div>
+
+<!-- SPEAKER NOTES -->
+<div class="speaker-notes" id="speakerNotes">
+  <div class="label">Speaker Notes</div>
+  <div id="notesContent"></div>
+</div>
+
+<!-- KEYBOARD HINTS -->
+<div class="keyboard-hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> navigate &middot; <kbd>F</kbd> fullscreen &middot; <kbd>N</kbd> notes</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+  let notesVisible = false;
+
+  function goTo(index) {
+    if (index < 0 || index >= total) return;
+    const prev = slides[current];
+    prev.classList.remove('active');
+    prev.classList.add(index > current ? 'exit-left' : '');
+    setTimeout(() => prev.classList.remove('exit-left'), 600);
+
+    current = index;
+    const next = slides[current];
+    next.classList.add('active');
+
+    // Update progress
+    document.getElementById('progressBar').style.width = ((current + 1) / total * 100) + '%';
+    document.getElementById('slideCounter').textContent = (current + 1) + ' / ' + total;
+
+    // Update notes
+    document.getElementById('notesContent').textContent = next.dataset.notes || '';
+
+    // Animate fund bars if on ask slide
+    animateFundBars(next);
+
+    // Animate counters
+    animateCounters(next);
+  }
+
+  function navigate(dir) {
+    goTo(current + dir);
+  }
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') {
+      e.preventDefault();
+      navigate(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      navigate(-1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen();
+      }
+    } else if (e.key === 'n' || e.key === 'N') {
+      notesVisible = !notesVisible;
+      document.getElementById('speakerNotes').classList.toggle('visible', notesVisible);
+    } else if (e.key === 'Home') {
+      goTo(0);
+    } else if (e.key === 'End') {
+      goTo(total - 1);
+    }
+  });
+
+  // Click navigation
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.nav-arrow') || e.target.closest('.speaker-notes') || e.target.closest('.keyboard-hint')) return;
+    const x = e.clientX / window.innerWidth;
+    if (x > 0.7) navigate(1);
+    else if (x < 0.3) navigate(-1);
+  });
+
+  // Touch support
+  let touchStartX = 0;
+  document.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].clientX; });
+  document.addEventListener('touchend', function(e) {
+    const diff = touchStartX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 50) navigate(diff > 0 ? 1 : -1);
+  });
+
+  // Animated counters
+  function animateCounters(slide) {
+    const counters = slide.querySelectorAll('.counter[data-counted="false"]');
+    counters.forEach(function(el) {
+      el.setAttribute('data-counted', 'true');
+      const target = parseFloat(el.dataset.target);
+      const prefix = el.dataset.prefix || '';
+      const suffix = el.dataset.suffix || '';
+      const duration = 1500;
+      const start = performance.now();
+      const isInt = Number.isInteger(target);
+
+      function update(now) {
+        const elapsed = now - start;
+        const progress = Math.min(elapsed / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const val = target * eased;
+        el.textContent = prefix + (isInt ? Math.round(val) : val.toFixed(1)) + suffix;
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    });
+  }
+
+  // Animate fund bars
+  function animateFundBars(slide) {
+    const bars = slide.querySelectorAll('.fund-bar');
+    bars.forEach(function(bar) {
+      const w = bar.dataset.width;
+      setTimeout(function() { bar.style.width = w; }, 300);
+    });
+  }
+
+  // Expose navigate globally
+  window.navigate = navigate;
+
+  // Initialize
+  goTo(0);
+})();
+</script>
+</body>
+</html>
