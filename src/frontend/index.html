@@ -1,1648 +1,1157 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Solidus — Institutional Stablecoin Infrastructure on Solana</title>
-    <meta name="description" content="Solidus is the protocol-level compliance and issuance layer that makes stablecoins institutional-grade. Built on Solana.">
-    <meta name="keywords" content="stablecoin, Solana, institutional, DeFi, compliance, Token-2022, infrastructure, crypto">
-    <meta name="author" content="Solidus">
-    <meta name="robots" content="index, follow">
-
-    <!-- Open Graph -->
-    <meta property="og:title" content="Solidus — Institutional Stablecoin Infrastructure">
-    <meta property="og:description" content="The protocol-level compliance and issuance layer that makes stablecoins institutional-grade. Built on Solana.">
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://solidus.finance">
-    <meta property="og:image" content="https://solidus.finance/og-image.png">
-
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Solidus — Institutional Stablecoin Infrastructure">
-    <meta name="twitter:description" content="The protocol-level compliance and issuance layer that makes stablecoins institutional-grade. Built on Solana.">
-
-    <link rel="canonical" href="https://solidus.finance">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230a0f1e'/><text y='70' x='50' text-anchor='middle' font-size='60' font-family='system-ui' fill='url(%23g)'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%233b82f6'/><stop offset='100%25' stop-color='%23d4a017'/></linearGradient></defs>S</text></svg>">
-
-    <style>
-        /* ============================================
-           DESIGN SYSTEM
-           ============================================ */
-        :root {
-            --color-bg: #050810;
-            --color-bg-elevated: #0a0f1e;
-            --color-bg-card: #0d1326;
-            --color-bg-card-hover: #111836;
-            --color-surface: #141b2f;
-            --color-border: rgba(255, 255, 255, 0.06);
-            --color-border-hover: rgba(255, 255, 255, 0.12);
-            --color-text-primary: #f0f2f5;
-            --color-text-secondary: #8a92a6;
-            --color-text-tertiary: #5a6278;
-            --color-accent-blue: #3b82f6;
-            --color-accent-gold: #d4a017;
-            --color-accent-blue-glow: rgba(59, 130, 246, 0.15);
-            --color-accent-gold-glow: rgba(212, 160, 23, 0.12);
-            --gradient-brand: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 40%, #d4a017 100%);
-            --gradient-brand-text: linear-gradient(135deg, #60a5fa 0%, #d4a017 100%);
-            --gradient-subtle: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(212, 160, 23, 0.05) 100%);
-            --gradient-card: linear-gradient(160deg, rgba(59, 130, 246, 0.04) 0%, transparent 50%);
-            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-            --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
-            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-            --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
-        }
-
-        /* ============================================
-           RESET & BASE
-           ============================================ */
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        body {
-            font-family: var(--font-sans);
-            background-color: var(--color-bg);
-            color: var(--color-text-primary);
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        a {
-            color: inherit;
-            text-decoration: none;
-        }
-
-        img {
-            max-width: 100%;
-            display: block;
-        }
-
-        /* ============================================
-           TYPOGRAPHY
-           ============================================ */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-        h1, h2, h3, h4 {
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-        }
-
-        .text-gradient {
-            background: var(--gradient-brand-text);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* ============================================
-           LAYOUT
-           ============================================ */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        section {
-            padding: 120px 0;
-            position: relative;
-        }
-
-        .section-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--color-accent-blue);
-            margin-bottom: 20px;
-        }
-
-        .section-label::before {
-            content: '';
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--color-accent-blue);
-            opacity: 0.6;
-        }
-
-        .section-title {
-            font-size: clamp(32px, 5vw, 52px);
-            margin-bottom: 20px;
-            color: var(--color-text-primary);
-        }
-
-        .section-subtitle {
-            font-size: 18px;
-            color: var(--color-text-secondary);
-            max-width: 600px;
-            line-height: 1.7;
-        }
-
-        /* ============================================
-           ANIMATIONS
-           ============================================ */
-        .reveal {
-            opacity: 0;
-            transform: translateY(40px);
-            transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
-        }
-
-        .reveal.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .reveal-delay-1 { transition-delay: 0.1s; }
-        .reveal-delay-2 { transition-delay: 0.2s; }
-        .reveal-delay-3 { transition-delay: 0.3s; }
-        .reveal-delay-4 { transition-delay: 0.4s; }
-        .reveal-delay-5 { transition-delay: 0.5s; }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
-        }
-
-        @keyframes pulse-glow {
-            0%, 100% { opacity: 0.4; }
-            50% { opacity: 0.8; }
-        }
-
-        @keyframes gradient-shift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
-        }
-
-        /* ============================================
-           NAVIGATION
-           ============================================ */
-        .nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            padding: 0 24px;
-            transition: all 0.4s var(--ease-out-quart);
-        }
-
-        .nav.scrolled {
-            background: rgba(5, 8, 16, 0.85);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .nav-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 72px;
-        }
-
-        .nav-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 700;
-            letter-spacing: -0.02em;
-        }
-
-        .nav-logo-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: var(--gradient-brand);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 16px;
-            color: white;
-        }
-
-        .nav-links {
-            display: flex;
-            align-items: center;
-            gap: 36px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            font-size: 14px;
-            font-weight: 500;
-            color: var(--color-text-secondary);
-            transition: color 0.3s ease;
-            position: relative;
-        }
-
-        .nav-links a:hover {
-            color: var(--color-text-primary);
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -4px;
-            left: 0;
-            width: 0;
-            height: 1.5px;
-            background: var(--gradient-brand);
-            transition: width 0.3s var(--ease-out-expo);
-        }
-
-        .nav-links a:hover::after {
-            width: 100%;
-        }
-
-        .nav-cta {
-            padding: 10px 24px;
-            border-radius: 10px;
-            background: var(--gradient-brand);
-            background-size: 200% 200%;
-            font-size: 14px;
-            font-weight: 600;
-            color: white !important;
-            transition: all 0.3s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .nav-cta:hover {
-            animation: gradient-shift 2s ease infinite;
-            box-shadow: 0 4px 24px rgba(59, 130, 246, 0.3);
-        }
-
-        .nav-cta::after {
-            display: none !important;
-        }
-
-        .nav-mobile-toggle {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px;
-        }
-
-        .nav-mobile-toggle span {
-            width: 22px;
-            height: 2px;
-            background: var(--color-text-primary);
-            border-radius: 1px;
-            transition: all 0.3s ease;
-        }
-
-        /* ── Language Selector ── */
-        .lang-selector { position: relative; }
-        .lang-btn { display: flex; align-items: center; gap: 6px; padding: 8px 14px; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: 10px; cursor: pointer; font-size: 13px; color: var(--color-text-secondary); transition: all 0.3s ease; font-family: var(--font-sans); }
-        .lang-btn:hover { border-color: var(--color-accent-blue); color: var(--color-text-primary); }
-        .lang-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.4); z-index: 2000; min-width: 170px; display: none; overflow: hidden; }
-        .lang-dropdown.show { display: block; }
-        .lang-option { display: flex; align-items: center; gap: 10px; padding: 12px 16px; font-size: 13px; cursor: pointer; color: var(--color-text-secondary); transition: all 0.2s ease; }
-        .lang-option:hover { background: rgba(59,130,246,0.06); color: var(--color-text-primary); }
-        .lang-option.active { color: var(--color-accent-blue); background: rgba(59,130,246,0.08); }
-
-        /* ============================================
-           HERO SECTION
-           ============================================ */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            position: relative;
-            padding: 120px 0 80px;
-            overflow: hidden;
-        }
-
-        .hero-bg {
-            position: absolute;
-            inset: 0;
-            overflow: hidden;
-        }
-
-        .hero-bg-orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.3;
-        }
-
-        .hero-bg-orb-1 {
-            width: 600px;
-            height: 600px;
-            background: var(--color-accent-blue);
-            top: -200px;
-            right: -100px;
-            opacity: 0.12;
-            animation: float 8s ease-in-out infinite;
-        }
-
-        .hero-bg-orb-2 {
-            width: 500px;
-            height: 500px;
-            background: var(--color-accent-gold);
-            bottom: -150px;
-            left: -100px;
-            opacity: 0.08;
-            animation: float 10s ease-in-out infinite 2s;
-        }
-
-        .hero-bg-grid {
-            position: absolute;
-            inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-            background-size: 60px 60px;
-            mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
-            -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 1;
-            max-width: 900px;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 18px;
-            border-radius: 100px;
-            background: rgba(59, 130, 246, 0.08);
-            border: 1px solid rgba(59, 130, 246, 0.15);
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--color-accent-blue);
-            margin-bottom: 32px;
-        }
-
-        .hero-badge-dot {
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: #22c55e;
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-
-        .hero-title {
-            font-size: clamp(44px, 7vw, 80px);
-            font-weight: 800;
-            line-height: 1.05;
-            letter-spacing: -0.03em;
-            margin-bottom: 28px;
-        }
-
-        .hero-title-line {
-            display: block;
-        }
-
-        .hero-description {
-            font-size: clamp(17px, 2vw, 20px);
-            color: var(--color-text-secondary);
-            max-width: 620px;
-            margin: 0 auto 48px;
-            line-height: 1.7;
-        }
-
-        .hero-actions {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 16px 32px;
-            border-radius: 14px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s var(--ease-out-quart);
-            border: none;
-            font-family: var(--font-sans);
-        }
-
-        .btn-primary {
-            background: var(--gradient-brand);
-            background-size: 200% 200%;
-            color: white;
-            box-shadow: 0 4px 24px rgba(59, 130, 246, 0.25);
-        }
-
-        .btn-primary:hover {
-            animation: gradient-shift 2s ease infinite;
-            box-shadow: 0 8px 40px rgba(59, 130, 246, 0.35);
-            transform: translateY(-2px);
-        }
-
-        .btn-secondary {
-            background: var(--color-bg-card);
-            color: var(--color-text-primary);
-            border: 1px solid var(--color-border);
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--color-border-hover);
-            background: var(--color-bg-card-hover);
-            transform: translateY(-2px);
-        }
-
-        .hero-metrics {
-            display: flex;
-            justify-content: center;
-            gap: 48px;
-            margin-top: 72px;
-            padding-top: 48px;
-            border-top: 1px solid var(--color-border);
-        }
-
-        .hero-metric {
-            text-align: center;
-        }
-
-        .hero-metric-value {
-            font-size: 32px;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            background: var(--gradient-brand-text);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-metric-label {
-            font-size: 13px;
-            color: var(--color-text-tertiary);
-            margin-top: 4px;
-            font-weight: 500;
-        }
-
-        /* ============================================
-           PROBLEM SECTION
-           ============================================ */
-        .problem {
-            background: var(--color-bg-elevated);
-            border-top: 1px solid var(--color-border);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .problem-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 80px;
-            align-items: center;
-            margin-top: 60px;
-        }
-
-        .problem-content h3 {
-            font-size: 28px;
-            margin-bottom: 24px;
-        }
-
-        .problem-content p {
-            color: var(--color-text-secondary);
-            font-size: 16px;
-            line-height: 1.8;
-            margin-bottom: 16px;
-        }
-
-        .problem-stat {
-            font-size: 56px;
-            font-weight: 800;
-            letter-spacing: -0.03em;
-            margin-bottom: 8px;
-        }
-
-        .problem-cards {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .problem-card {
-            padding: 24px 28px;
-            border-radius: 16px;
-            background: var(--color-bg-card);
-            border: 1px solid var(--color-border);
-            transition: all 0.4s var(--ease-out-expo);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .problem-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--gradient-brand);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .problem-card:hover {
-            border-color: var(--color-border-hover);
-            transform: translateX(4px);
-        }
-
-        .problem-card:hover::before {
-            opacity: 1;
-        }
-
-        .problem-card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            margin-bottom: 14px;
-            background: rgba(239, 68, 68, 0.1);
-        }
-
-        .problem-card h4 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-
-        .problem-card p {
-            font-size: 14px;
-            color: var(--color-text-secondary);
-            line-height: 1.6;
-        }
-
-        /* ============================================
-           HOW IT WORKS
-           ============================================ */
-        .how-it-works {
-            text-align: center;
-        }
-
-        .steps {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 32px;
-            margin-top: 72px;
-            position: relative;
-        }
-
-        .steps::before {
-            content: '';
-            position: absolute;
-            top: 56px;
-            left: 20%;
-            right: 20%;
-            height: 1px;
-            background: linear-gradient(90deg, transparent, var(--color-border), var(--color-border), transparent);
-        }
-
-        .step {
-            text-align: center;
-            position: relative;
-            padding: 0 16px;
-        }
-
-        .step-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: 24px;
-            margin: 0 auto 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            background: var(--color-bg-card);
-            border: 1px solid var(--color-border);
-            position: relative;
-            z-index: 1;
-            transition: all 0.4s var(--ease-out-expo);
-        }
-
-        .step:hover .step-icon {
-            border-color: var(--color-accent-blue);
-            box-shadow: 0 0 40px var(--color-accent-blue-glow);
-            transform: translateY(-4px);
-        }
-
-        .step-number {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--color-accent-blue);
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
-            margin-bottom: 12px;
-        }
-
-        .step h3 {
-            font-size: 22px;
-            margin-bottom: 12px;
-        }
-
-        .step p {
-            font-size: 15px;
-            color: var(--color-text-secondary);
-            line-height: 1.7;
-        }
-
-        /* ============================================
-           FEATURES
-           ============================================ */
-        .features {
-            background: var(--color-bg-elevated);
-            border-top: 1px solid var(--color-border);
-            border-bottom: 1px solid var(--color-border);
-        }
-
-        .features-header {
-            text-align: center;
-            margin-bottom: 72px;
-        }
-
-        .features-header .section-subtitle {
-            margin: 0 auto;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-        }
-
-        .feature-card {
-            padding: 36px 32px;
-            border-radius: 20px;
-            background: var(--color-bg-card);
-            border: 1px solid var(--color-border);
-            transition: all 0.4s var(--ease-out-expo);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .feature-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--gradient-card);
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .feature-card:hover {
-            border-color: var(--color-border-hover);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .feature-card:hover::after {
-            opacity: 1;
-        }
-
-        .feature-card-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .feature-icon {
-            width: 52px;
-            height: 52px;
-            border-radius: 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin-bottom: 20px;
-            background: var(--gradient-subtle);
-            border: 1px solid var(--color-border);
-        }
-
-        .feature-card h3 {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-
-        .feature-card p {
-            font-size: 14px;
-            color: var(--color-text-secondary);
-            line-height: 1.7;
-        }
-
-        .feature-card-highlight {
-            grid-column: span 2;
-            background: var(--gradient-subtle);
-        }
-
-        .feature-card-highlight .feature-card-inner {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 32px;
-            align-items: center;
-        }
-
-        /* ============================================
-           TECH STACK
-           ============================================ */
-        .tech {
-            text-align: center;
-        }
-
-        .tech-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 16px;
-            margin-top: 56px;
-        }
-
-        .tech-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 14px 28px;
-            border-radius: 100px;
-            background: var(--color-bg-card);
-            border: 1px solid var(--color-border);
-            font-size: 15px;
-            font-weight: 500;
-            transition: all 0.3s var(--ease-out-expo);
-        }
-
-        .tech-pill:hover {
-            border-color: var(--color-border-hover);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-        }
-
-        .tech-pill-icon {
-            font-size: 20px;
-        }
-
-        /* ============================================
-           CTA SECTION
-           ============================================ */
-        .cta {
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .cta-bg {
-            position: absolute;
-            inset: 0;
-            overflow: hidden;
-        }
-
-        .cta-bg-orb {
-            position: absolute;
-            width: 500px;
-            height: 500px;
-            border-radius: 50%;
-            filter: blur(140px);
-            opacity: 0.15;
-        }
-
-        .cta-bg-orb-1 {
-            background: var(--color-accent-blue);
-            top: -200px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .cta-bg-orb-2 {
-            background: var(--color-accent-gold);
-            bottom: -200px;
-            left: 50%;
-            transform: translateX(-50%);
-            opacity: 0.08;
-        }
-
-        .cta-content {
-            position: relative;
-            z-index: 1;
-        }
-
-        .cta-title {
-            font-size: clamp(36px, 5vw, 56px);
-            margin-bottom: 20px;
-        }
-
-        .cta-subtitle {
-            font-size: 18px;
-            color: var(--color-text-secondary);
-            max-width: 500px;
-            margin: 0 auto 40px;
-            line-height: 1.7;
-        }
-
-        .cta-actions {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        /* ============================================
-           FOOTER
-           ============================================ */
-        .footer {
-            padding: 60px 0 40px;
-            border-top: 1px solid var(--color-border);
-        }
-
-        .footer-inner {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 48px;
-        }
-
-        .footer-brand {
-            max-width: 280px;
-        }
-
-        .footer-brand-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 14px;
-        }
-
-        .footer-brand p {
-            font-size: 14px;
-            color: var(--color-text-tertiary);
-            line-height: 1.7;
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 64px;
-        }
-
-        .footer-col h4 {
-            font-size: 13px;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--color-text-secondary);
-            margin-bottom: 18px;
-        }
-
-        .footer-col ul {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .footer-col a {
-            font-size: 14px;
-            color: var(--color-text-tertiary);
-            transition: color 0.3s ease;
-        }
-
-        .footer-col a:hover {
-            color: var(--color-text-primary);
-        }
-
-        .footer-bottom {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 48px;
-            padding-top: 24px;
-            border-top: 1px solid var(--color-border);
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-
-        .footer-bottom p {
-            font-size: 13px;
-            color: var(--color-text-tertiary);
-        }
-
-        .footer-bottom-links {
-            display: flex;
-            gap: 24px;
-        }
-
-        .footer-bottom-links a {
-            font-size: 13px;
-            color: var(--color-text-tertiary);
-            transition: color 0.3s ease;
-        }
-
-        .footer-bottom-links a:hover {
-            color: var(--color-text-primary);
-        }
-
-        /* ============================================
-           RESPONSIVE
-           ============================================ */
-        @media (max-width: 1024px) {
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            .feature-card-highlight {
-                grid-column: span 2;
-            }
-        }
-
-        @media (max-width: 768px) {
-            section {
-                padding: 80px 0;
-            }
-
-            .nav-links {
-                display: none;
-                position: fixed;
-                top: 72px;
-                left: 0;
-                right: 0;
-                background: rgba(5, 8, 16, 0.95);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
-                flex-direction: column;
-                padding: 24px;
-                gap: 20px;
-                border-bottom: 1px solid var(--color-border);
-            }
-
-            .nav-links.open {
-                display: flex;
-            }
-
-            .nav-mobile-toggle {
-                display: flex;
-            }
-
-            .hero-metrics {
-                gap: 24px;
-            }
-
-            .hero-metric-value {
-                font-size: 24px;
-            }
-
-            .problem-grid {
-                grid-template-columns: 1fr;
-                gap: 48px;
-            }
-
-            .steps {
-                grid-template-columns: 1fr;
-                gap: 48px;
-            }
-
-            .steps::before {
-                display: none;
-            }
-
-            .features-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .feature-card-highlight {
-                grid-column: span 1;
-            }
-
-            .feature-card-highlight .feature-card-inner {
-                grid-template-columns: 1fr;
-            }
-
-            .footer-inner {
-                flex-direction: column;
-            }
-
-            .footer-links {
-                gap: 40px;
-                flex-wrap: wrap;
-            }
-
-            .footer-bottom {
-                flex-direction: column;
-                text-align: center;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .hero-actions {
-                flex-direction: column;
-                width: 100%;
-            }
-
-            .btn {
-                width: 100%;
-                justify-content: center;
-            }
-
-            .hero-metrics {
-                flex-direction: column;
-                gap: 20px;
-            }
-
-            .tech-grid {
-                gap: 10px;
-            }
-
-            .tech-pill {
-                padding: 10px 20px;
-                font-size: 13px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solidus — Institutional Stablecoin Infrastructure on Solana</title>
+<meta name="description" content="Solidus: The compliance layer for institutional stablecoins. Programmable compliance, institutional controls, and real-time reserves on Solana.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --dark:#0a0f1c;--dark-blue:#081428;--dark-navy:#0c1a30;
+  --surface:#111a2e;--surface2:#162240;
+  --blue:#1a3a6b;--gold:#d4a843;--gold-light:#e8c76a;--gold-dim:rgba(212,168,67,.15);
+  --cyan:#38bdf8;--green:#22c55e;--red:#ef4444;
+  --text1:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--white:#ffffff;
+  --head:'Space Grotesk',sans-serif;
+  --body:'Inter',sans-serif;
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+  --smooth:cubic-bezier(0.22,1,0.36,1);
+  --ease-out:cubic-bezier(0.16,1,0.3,1);
+}
+html{font-size:16px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;scroll-behavior:smooth}
+body{font-family:var(--body);background:var(--dark);color:var(--text1);overflow-x:hidden;line-height:1.6;cursor:none}
+a{color:inherit;text-decoration:none}
+button{font-family:var(--body);cursor:none;border:none;background:none;color:inherit}
+img{display:block;max-width:100%}
+
+/* TYPOGRAPHY */
+.display{font-family:var(--head);font-size:clamp(3rem,8vw,5.5rem);font-weight:700;letter-spacing:-0.04em;line-height:0.95;color:var(--white)}
+.h2-title{font-family:var(--head);font-size:clamp(2rem,4vw,3.5rem);font-weight:600;letter-spacing:-0.03em;line-height:1.1;color:var(--white)}
+.h3-title{font-family:var(--head);font-size:clamp(1.2rem,2vw,1.5rem);font-weight:600;color:var(--white)}
+.body-text{font-size:1.05rem;font-weight:400;line-height:1.7;color:var(--text2)}
+.caption{font-size:0.75rem;font-weight:500;text-transform:uppercase;letter-spacing:0.15em;color:var(--text3)}
+.gradient-text{background:linear-gradient(135deg,var(--gold),var(--gold-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.gradient-text-blue{background:linear-gradient(135deg,#5b8def,var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+
+/* BREATHING */
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.005)}}
+.breathe{animation:breathe 4s ease-in-out infinite}
+
+/* CURSOR */
+.cursor-dot{position:fixed;top:0;left:0;width:8px;height:8px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;mix-blend-mode:screen;transition:width .25s var(--spring),height .25s var(--spring),background .25s}
+.cursor-ring{position:fixed;top:0;left:0;width:36px;height:36px;border:1.5px solid rgba(212,168,67,.45);border-radius:50%;pointer-events:none;z-index:9998;transition:width .35s var(--spring),height .35s var(--spring),border-color .3s}
+.cursor-dot.active{width:48px;height:48px;background:rgba(212,168,67,.18)}
+.cursor-ring.active{width:56px;height:56px;border-color:var(--gold-light)}
+@media(pointer:coarse){.cursor-dot,.cursor-ring{display:none}body{cursor:auto}}
+
+/* SCROLL PROGRESS */
+.scroll-progress{position:fixed;top:0;left:0;height:2px;background:linear-gradient(90deg,var(--blue),var(--gold),var(--gold-light));z-index:10001;width:0;transform-origin:left;will-change:width}
+
+/* NOISE */
+.noise{position:fixed;top:-50%;left:-50%;width:200%;height:200%;pointer-events:none;z-index:9000;opacity:.03;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* BRAND PATTERN */
+.brand-pattern{position:absolute;inset:0;pointer-events:none;opacity:.015;background-image:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 5 L30 55' fill='none' stroke='%23d4a843' stroke-width='.5'/%3E%3Cpath d='M5 30 L55 30' fill='none' stroke='%23d4a843' stroke-width='.5'/%3E%3C/svg%3E");background-size:60px 60px}
+
+/* MESH BG */
+.mesh-bg{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.mesh-orb{position:absolute;border-radius:50%;filter:blur(120px);will-change:transform;mix-blend-mode:screen}
+.mesh-orb.a{width:55vw;height:55vw;top:-15%;left:-10%;background:radial-gradient(circle,rgba(26,58,107,.2),transparent 70%)}
+.mesh-orb.b{width:45vw;height:45vw;bottom:-10%;right:-10%;background:radial-gradient(circle,rgba(212,168,67,.08),transparent 70%)}
+.mesh-orb.c{width:35vw;height:35vw;top:40%;left:50%;background:radial-gradient(circle,rgba(56,189,248,.06),transparent 70%)}
+
+/* NAV */
+.nav{position:fixed;top:0;left:0;right:0;z-index:1000;padding:20px 0;transition:all .4s var(--smooth)}
+.nav.shrink{padding:12px 0;background:rgba(10,15,28,.92);backdrop-filter:blur(24px) saturate(1.4);border-bottom:1px solid rgba(212,168,67,.08)}
+.nav-inner{max-width:1280px;margin:0 auto;padding:0 clamp(20px,3vw,48px);display:flex;align-items:center;justify-content:space-between}
+.nav-logo{font-family:var(--head);font-weight:700;font-size:1.6rem;letter-spacing:-.03em;display:flex;align-items:center;gap:0;flex-shrink:0}
+.nav-logo svg{height:32px;width:auto}
+.nav-links{display:flex;gap:28px;align-items:center}
+.nav-links a{font-size:.85rem;font-weight:500;color:var(--text2);transition:color .3s;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-4px;left:0;width:0;height:1.5px;background:var(--gold);transition:width .3s var(--spring)}
+.nav-links a:hover{color:var(--white)}
+.nav-links a:hover::after{width:100%}
+.nav-right{display:flex;align-items:center;gap:16px;flex-shrink:0}
+.lang-selector{position:relative}
+.lang-btn{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:80px;
+  background:rgba(17,26,46,.8);border:1px solid rgba(212,168,67,.15);font-size:.8rem;color:var(--text2);
+  cursor:none;transition:all .2s;backdrop-filter:blur(12px);font-family:var(--body);white-space:nowrap}
+.lang-btn:hover{border-color:var(--gold);color:var(--white)}
+.lang-dropdown{display:none;position:absolute;top:calc(100% + 6px);right:0;background:rgba(10,15,28,.95);
+  border:1px solid rgba(212,168,67,.15);border-radius:12px;overflow:hidden;min-width:160px;
+  box-shadow:0 12px 40px rgba(0,0,0,.5);backdrop-filter:blur(20px)}
+.lang-dropdown.open{display:block}
+.lang-option{display:flex;align-items:center;gap:8px;padding:10px 16px;font-size:.8rem;
+  color:var(--text2);cursor:pointer;transition:all .15s;border:none;background:none;width:100%;text-align:left;font-family:var(--body)}
+.lang-option:hover{background:rgba(212,168,67,.1);color:var(--white)}
+.lang-option.active{color:var(--gold);font-weight:600}
+.nav-cta{font-size:.85rem;font-weight:600;padding:10px 24px;border-radius:80px;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--dark);transition:all .3s var(--spring);position:relative;overflow:hidden;white-space:nowrap}
+.nav-cta::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.25),transparent);transform:translateX(-100%);transition:none}
+.nav-cta:hover::before{transform:translateX(100%);transition:transform .6s}
+.nav-cta:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(212,168,67,.4)}
+.nav-mobile-btn{display:none;flex-direction:column;gap:5px;background:none;border:none;cursor:pointer}
+.nav-mobile-btn span{width:22px;height:2px;background:var(--text1);border-radius:2px;transition:all .3s}
+@media(max-width:768px){
+  .nav-links{display:none}
+  .nav-mobile-btn{display:flex}
+  .nav-right .lang-selector{display:none}
+  .nav-right .nav-cta{display:none}
+  .nav-links.open{display:flex;flex-direction:column;position:absolute;top:100%;left:0;right:0;background:rgba(10,15,28,.96);backdrop-filter:blur(24px);padding:24px;gap:20px;border-bottom:1px solid rgba(212,168,67,.1)}
+  .nav-links.open .mobile-lang{display:flex;flex-direction:column;gap:4px}
+  .nav-links.open .mobile-cta{display:inline-flex}
+}
+.mobile-lang{display:none}
+.mobile-cta{display:none;padding:12px 24px;border-radius:80px;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--dark);font-weight:600;font-size:.9rem;text-align:center;margin-top:8px}
+@media(pointer:coarse){.lang-btn,.lang-option{cursor:auto}.nav-cta{cursor:auto}}
+
+/* HERO */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;z-index:1;overflow:hidden;padding:120px 0 80px;background:var(--dark)}
+.hero .brand-pattern{z-index:0}
+.hero-inner{max-width:1280px;margin:0 auto;padding:0 clamp(20px,3vw,48px);display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(32px,4vw,60px);align-items:center;position:relative;z-index:2}
+.hero-content{position:relative;z-index:2}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;padding:6px 16px 6px 8px;border-radius:80px;border:1px solid rgba(212,168,67,.25);background:rgba(212,168,67,.06);font-size:.75rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--gold);width:fit-content;margin-bottom:24px;opacity:0;transform:translateY(20px)}
+.hero-tag .pulse{width:8px;height:8px;background:var(--gold);border-radius:50%;animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+.hero-headline{margin-bottom:24px}
+.hero-headline .char{display:inline-block;opacity:0;transform:translateY(60px) rotate(8deg);will-change:transform,opacity}
+.hero-headline .word{display:inline-block;white-space:pre}
+.hero-sub{font-size:clamp(1rem,1.6vw,1.15rem);color:var(--text2);max-width:520px;line-height:1.7;margin-bottom:40px;opacity:0;transform:translateY(30px)}
+.hero-ctas{display:flex;gap:16px;flex-wrap:wrap;opacity:0;transform:translateY(30px)}
+.btn-primary{position:relative;display:inline-flex;align-items:center;gap:10px;padding:16px 36px;border-radius:80px;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--dark);font-weight:600;font-size:1rem;overflow:hidden;transition:all .35s var(--spring)}
+.btn-primary::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);transform:translateX(-100%)}
+.btn-primary:hover::before{transform:translateX(100%);transition:transform .7s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(212,168,67,.4)}
+.btn-primary .arrow{transition:transform .3s}.btn-primary:hover .arrow{transform:translateX(4px)}
+.btn-ghost{display:inline-flex;align-items:center;gap:8px;padding:16px 32px;border-radius:80px;border:1px solid rgba(226,232,240,.15);color:var(--text1);font-weight:500;font-size:1rem;transition:all .3s var(--spring);backdrop-filter:blur(8px)}
+.btn-ghost:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-2px);box-shadow:0 8px 20px rgba(212,168,67,.15)}
+
+/* DASHBOARD MOCKUP */
+.hero-dash-wrap{position:relative;display:flex;justify-content:center;align-items:center}
+.dash-glow{position:absolute;width:80%;height:80%;border-radius:50%;background:radial-gradient(circle,rgba(26,58,107,.25),rgba(212,168,67,.08),transparent 70%);filter:blur(60px);z-index:0}
+.dash-mockup{position:relative;z-index:1;width:380px;border-radius:20px;background:#111827;border:1px solid rgba(255,255,255,.08);box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;overflow:hidden;will-change:transform}
+.dash-topbar{height:36px;background:#0f172a;display:flex;align-items:center;padding:0 12px;gap:6px;border-bottom:1px solid rgba(255,255,255,.05)}
+.dash-dot{width:8px;height:8px;border-radius:50%}
+.dash-dot.r{background:#ef4444}.dash-dot.y{background:#f59e0b}.dash-dot.g{background:#22c55e}
+.dash-title-bar{flex:1;text-align:center;font-size:.55rem;color:var(--text3);font-family:var(--head);font-weight:600;letter-spacing:.05em}
+.dash-body{padding:16px;background:#0f172a}
+.dash-row{display:flex;gap:8px;margin-bottom:8px}
+.dash-stat-card{flex:1;padding:10px;border-radius:10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.05)}
+.dash-stat-label{font-size:.5rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.dash-stat-val{font-family:var(--head);font-size:.85rem;font-weight:700;color:var(--white)}
+.dash-stat-change{font-size:.45rem;font-weight:600;margin-top:2px}
+.dash-stat-change.up{color:var(--green)}
+.dash-chart{height:48px;background:rgba(212,168,67,.04);border-radius:8px;border:1px solid rgba(212,168,67,.08);margin:8px 0;position:relative;overflow:hidden}
+.dash-chart svg{width:100%;height:100%}
+.dash-table{margin-top:8px}
+.dash-table-head{display:flex;padding:4px 8px;font-size:.45rem;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid rgba(255,255,255,.05)}
+.dash-table-head span{flex:1}
+.dash-table-row{display:flex;padding:6px 8px;font-size:.5rem;align-items:center;border-bottom:1px solid rgba(255,255,255,.02)}
+.dash-table-row span{flex:1;color:var(--text2)}
+.dash-table-row .status{display:inline-block;padding:1px 6px;border-radius:4px;font-size:.4rem;font-weight:600}
+.dash-table-row .status.active{background:rgba(34,197,94,.1);color:var(--green)}
+.dash-table-row .status.pending{background:rgba(245,158,11,.1);color:#f59e0b}
+.dash-table-row .status.frozen{background:rgba(239,68,68,.1);color:var(--red)}
+
+@media(max-width:768px){
+  .hero-inner{grid-template-columns:1fr;text-align:center}
+  .hero-sub{margin-left:auto;margin-right:auto}
+  .hero-ctas{justify-content:center}
+  .hero-dash-wrap{order:-1;margin-bottom:20px}
+  .dash-mockup{width:300px}
+}
+
+/* MARQUEE */
+.marquee-section{position:relative;z-index:1;padding:24px 0;border-top:1px solid rgba(212,168,67,.08);border-bottom:1px solid rgba(212,168,67,.08);overflow:hidden;background:rgba(17,26,46,.6)}
+.marquee-track{display:flex;gap:48px;animation:marquee 40s linear infinite;width:max-content}
+.marquee-item{white-space:nowrap;font-size:.85rem;color:var(--text2);display:flex;align-items:center;gap:12px;font-weight:500}
+.marquee-item .sep{width:6px;height:6px;background:var(--gold);border-radius:50%;opacity:.5}
+@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* REVEAL ANIMATIONS */
+.reveal{opacity:0;transform:translateY(48px) scale(.97);transition:all .9s var(--spring)}.reveal.visible{opacity:1;transform:translateY(-4px) scale(1.003);animation:settleBack .4s .9s var(--smooth) forwards}
+@keyframes settleBack{to{transform:translateY(0) scale(1)}}
+.reveal-left{opacity:0;transform:translateX(-60px) rotate(-3deg);transition:all .9s var(--spring)}.reveal-left.visible{opacity:1;transform:translateX(0) rotate(0)}
+.reveal-right{opacity:0;transform:translateX(60px) rotate(3deg);transition:all .9s var(--spring)}.reveal-right.visible{opacity:1;transform:translateX(0) rotate(0)}
+.stagger-child{opacity:0;transform:translateY(40px) scale(.96);transition:all .8s var(--spring)}.stagger-child.visible{opacity:1;transform:none}
+
+/* PROBLEM */
+.problem{position:relative;z-index:1;padding:clamp(80px,12vw,160px) 0;background:var(--dark-blue);overflow:hidden}
+.problem .brand-pattern{z-index:0}
+.problem-inner{max-width:1280px;margin:0 auto;padding:0 clamp(20px,3vw,48px);position:relative;text-align:center}
+.problem-big-number{font-family:var(--head);font-size:clamp(10rem,20vw,22rem);font-weight:700;letter-spacing:-.06em;line-height:.85;color:rgba(255,255,255,.03);position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;user-select:none;white-space:nowrap}
+.problem-content{position:relative;z-index:1}
+.problem-desc{font-size:clamp(1.05rem,1.8vw,1.25rem);color:var(--text2);margin:0 auto clamp(48px,6vw,80px);max-width:700px;line-height:1.7}
+.problem-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.prob-card{background:var(--surface);border:1px solid rgba(212,168,67,.06);border-top:3px solid var(--red);border-radius:20px;padding:clamp(28px,3vw,40px);position:relative;overflow:hidden;transition:all .45s var(--spring);display:flex;flex-direction:column;text-align:left}
+.prob-card:nth-child(2){border-top-color:var(--gold)}
+.prob-card:nth-child(3){border-top-color:var(--cyan)}
+.prob-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(0,0,0,.3);border-color:rgba(212,168,67,.15)}
+.prob-card .card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.prob-card h3{font-family:var(--head);font-size:1.1rem;font-weight:600;color:var(--white);margin-bottom:8px}
+.prob-card p{font-size:.88rem;color:var(--text2);line-height:1.65}
+@media(max-width:768px){.problem-cards{grid-template-columns:1fr}}
+
+/* SOLUTION PILLARS */
+.pillars{position:relative;z-index:1;padding:clamp(80px,12vw,160px) 0;background:var(--dark);overflow:hidden}
+.pillars-inner{max-width:1280px;margin:0 auto;padding:0 clamp(20px,3vw,48px)}
+.pillars-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:clamp(40px,6vw,64px)}
+.pillar-card{background:var(--surface);border:1px solid rgba(212,168,67,.06);border-top:3px solid var(--gold);border-radius:20px;padding:clamp(28px,3vw,40px);position:relative;overflow:hidden;transition:all .45s var(--spring);display:flex;flex-direction:column}
+.pillar-card::before{content:'';position:absolute;inset:-1px;border-radius:21px;padding:1px;background:linear-gradient(135deg,transparent,rgba(212,168,67,.2),transparent,rgba(26,58,107,.3),transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .4s}
+.pillar-card:hover::before{opacity:1}
+.pillar-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(0,0,0,.3)}
+.pillar-card .card-icon{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:1.5rem}
+.pillar-card h3{font-family:var(--head);font-size:1.2rem;font-weight:600;color:var(--white);margin-bottom:10px;letter-spacing:-.01em}
+.pillar-card p{font-size:.9rem;color:var(--text2);line-height:1.65}
+.ic-gold{background:var(--gold-dim);color:var(--gold)}
+.ic-blue{background:rgba(56,189,248,.1);color:var(--cyan)}
+.ic-green{background:rgba(34,197,94,.12);color:var(--green)}
+@media(max-width:768px){.pillars-grid{grid-template-columns:1fr}}
+
+/* HOW IT WORKS */
+.how-it-works{position:relative;z-index:1;padding:clamp(80px,12vw,160px) 0;background:var(--dark-navy);overflow:hidden}
+.how-inner{max-width:1100px;margin:0 auto;padding:0 clamp(20px,3vw,48px)}
+.how-steps{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:0;margin-top:clamp(40px,6vw,64px);align-items:start}
+.how-step{text-align:center;padding:0 16px}
+.how-step-num{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-light));color:var(--dark);font-family:var(--head);font-weight:700;font-size:1.5rem;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 32px rgba(212,168,67,.3)}
+.how-step h3{font-family:var(--head);font-size:1.15rem;font-weight:600;color:var(--white);margin-bottom:8px}
+.how-step p{font-size:.88rem;color:var(--text2);line-height:1.6}
+.how-connector{display:flex;align-items:center;justify-content:center;padding-top:28px}
+.how-connector svg{width:48px;height:24px}
+@media(max-width:768px){
+  .how-steps{grid-template-columns:1fr;gap:32px}
+  .how-connector{transform:rotate(90deg);padding:0;height:32px}
+}
+
+/* BENTO FEATURES */
+.bento{position:relative;z-index:1;padding:clamp(80px,12vw,160px) 0;background:var(--dark-blue)}
+.bento-inner{max-width:1280px;margin:0 auto;padding:0 clamp(20px,3vw,48px)}
+.bento-header{margin-bottom:clamp(40px,6vw,72px)}
+.bento-grid{display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:minmax(260px,auto);gap:20px}
+.bento-grid .card:nth-child(1){grid-column:span 2}
+.bento-grid .card:nth-child(4){grid-column:span 2}
+.bento-card{background:var(--surface);border:1px solid rgba(212,168,67,.06);border-radius:20px;padding:clamp(24px,3vw,32px);position:relative;overflow:hidden;transition:all .45s var(--spring);display:flex;flex-direction:column}
+.bento-card::before{content:'';position:absolute;inset:-1px;border-radius:21px;padding:1px;background:linear-gradient(135deg,transparent,rgba(212,168,67,.2),transparent,rgba(26,58,107,.3),transparent);-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;opacity:0;transition:opacity .4s}
+.bento-card:hover::before{opacity:1}
+.bento-card:hover{transform:translateY(-4px);box-shadow:0 24px 48px rgba(0,0,0,.3)}
+.bento-card .card-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;flex-shrink:0}
+.bento-card h3{font-family:var(--head);font-size:1.1rem;font-weight:600;color:var(--white);margin-bottom:8px;letter-spacing:-.01em}
+.bento-card p{font-size:.85rem;color:var(--text2);line-height:1.65;margin-bottom:12px}
+
+/* Mini feature previews */
+.mini-preview{margin-top:auto;border-radius:12px;padding:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.04);overflow:hidden}
+.mini-code{font-family:'SF Mono',Monaco,Consolas,monospace;font-size:.55rem;line-height:1.7;color:var(--text3)}
+.mini-code .kw{color:var(--gold)}
+.mini-code .fn{color:var(--cyan)}
+.mini-code .str{color:var(--green)}
+.mini-code .cm{color:var(--text3);opacity:.5}
+
+/* Mini whitelist */
+.mini-wl{display:flex;flex-direction:column;gap:4px}
+.mini-wl-row{display:flex;align-items:center;gap:8px;font-size:.55rem;padding:4px 8px;border-radius:6px;background:rgba(255,255,255,.02)}
+.mini-wl-addr{font-family:monospace;color:var(--text3);flex:1}
+.mini-wl-st{font-size:.45rem;font-weight:600;padding:2px 6px;border-radius:4px}
+.mini-wl-st.ok{background:rgba(34,197,94,.1);color:var(--green)}
+.mini-wl-st.wait{background:rgba(245,158,11,.1);color:#f59e0b}
+
+/* Mini roles */
+.mini-roles{display:flex;gap:12px;justify-content:center;padding:8px 0}
+.mini-role{display:flex;flex-direction:column;align-items:center;gap:4px}
+.mini-role-c{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;color:#fff;font-family:var(--head)}
+.mini-role-l{font-size:.45rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+
+@media(max-width:768px){.bento-grid{grid-template-columns:1fr;grid-auto-rows:auto}.bento-grid .card:nth-child(1),.bento-grid .card:nth-child(4){grid-column:span 1}}
+
+/* SECURITY */
+.security{position:relative;z-index:1;padding:clamp(80px,12vw,140px) 0;background:var(--dark);overflow:hidden}
+.security-inner{max-width:1100px;margin:0 auto;padding:0 clamp(20px,3vw,48px);text-align:center}
+.sec-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:clamp(40px,6vw,64px)}
+.sec-item{padding:28px 20px;border-radius:16px;background:var(--surface);border:1px solid rgba(212,168,67,.06);transition:all .4s var(--spring);text-align:center}
+.sec-item:hover{border-color:rgba(212,168,67,.2);transform:translateY(-4px)}
+.sec-icon{width:48px;height:48px;border-radius:50%;background:var(--gold-dim);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.3rem}
+.sec-item h4{font-family:var(--head);font-size:.95rem;font-weight:600;color:var(--white);margin-bottom:6px}
+.sec-item p{font-size:.8rem;color:var(--text3);line-height:1.5}
+@media(max-width:768px){.sec-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.sec-grid{grid-template-columns:1fr}}
+
+/* STATS */
+.stats{position:relative;z-index:1;padding:clamp(80px,12vw,140px) 0;background:var(--dark-navy);border-top:1px solid rgba(212,168,67,.06);border-bottom:1px solid rgba(212,168,67,.06)}
+.stats-inner{max-width:1100px;margin:0 auto;padding:0 clamp(20px,3vw,48px);display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+.stat-item .stat-num{font-family:var(--head);font-size:clamp(2.5rem,6vw,4.5rem);font-weight:700;letter-spacing:-.04em;color:var(--white);margin-bottom:8px;line-height:1}
+.stat-item .stat-label{font-size:.75rem;color:var(--text3);font-weight:500;text-transform:uppercase;letter-spacing:.1em}
+@media(max-width:768px){.stats-inner{grid-template-columns:repeat(2,1fr);gap:32px}}
+
+/* CTA */
+.cta-section{position:relative;z-index:1;padding:clamp(80px,12vw,140px) 0;overflow:hidden;background:var(--dark)}
+.cta-section::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at center,rgba(212,168,67,.06),transparent 70%)}
+.cta-inner{max-width:680px;margin:0 auto;padding:0 clamp(20px,3vw,48px);text-align:center;position:relative;z-index:1}
+.cta-inner h2{font-family:var(--head);font-size:clamp(1.8rem,4vw,3rem);font-weight:700;letter-spacing:-.03em;color:var(--white);margin-bottom:16px;line-height:1.15}
+.cta-inner p{font-size:1.05rem;color:var(--text2);margin-bottom:36px;line-height:1.7}
+.cta-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+@media(max-width:520px){.cta-buttons{flex-direction:column;align-items:center}}
+
+/* FOOTER */
+.footer{position:relative;z-index:1;padding:48px 0;border-top:1px solid rgba(212,168,67,.06);background:var(--dark)}
+.footer-inner{max-width:1280px;margin:0 auto;padding:0 clamp(20px,3vw,48px);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+.footer-left{display:flex;align-items:center;gap:24px}
+.footer-logo{font-family:var(--head);font-weight:700;font-size:1.2rem;display:flex;align-items:center;gap:0}
+.footer-logo svg{height:24px;width:auto}
+.footer-links{display:flex;gap:20px;font-size:.82rem;color:var(--text3)}
+.footer-links a:hover{color:var(--text1)}
+.footer-badge{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--text3);padding:6px 14px;border-radius:80px;border:1px solid rgba(212,168,67,.1);background:rgba(212,168,67,.04);font-weight:500;letter-spacing:.03em}
+.footer-badge .chain-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:pulse 2s ease infinite}
+@media(max-width:600px){.footer-inner{flex-direction:column;text-align:center}.footer-left{flex-direction:column}}
+
+/* FLOATING ELEMENTS */
+.float-el{position:absolute;pointer-events:none;opacity:.06;z-index:0}
+</style>
 </head>
 <body>
 
-    <!-- ==================== NAV ==================== -->
-    <nav class="nav" id="nav">
-        <div class="nav-inner">
-            <a href="#" class="nav-logo">
-                <div class="nav-logo-icon">S</div>
-                Solidus
-            </a>
-            <ul class="nav-links" id="navLinks">
-                <li><a href="#problem" data-i18n="navProblem">Problem</a></li>
-                <li><a href="#how-it-works" data-i18n="navHow">How It Works</a></li>
-                <li><a href="#features" data-i18n="navFeatures">Features</a></li>
-                <li><a href="#tech" data-i18n="navTech">Tech Stack</a></li>
-                <li><a href="#cta" class="nav-cta" data-i18n="navLaunch">Launch App</a></li>
-                <li class="lang-selector">
-                  <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown(event)">&#127760; EN</button>
-                  <div class="lang-dropdown" id="langDropdown">
-                    <div class="lang-option active" data-lang="en" onclick="setLang('en')">&#127468;&#127463; English</div>
-                    <div class="lang-option" data-lang="de" onclick="setLang('de')">&#127465;&#127466; Deutsch</div>
-                    <div class="lang-option" data-lang="fr" onclick="setLang('fr')">&#127467;&#127479; Fran&ccedil;ais</div>
-                  </div>
-                </li>
-            </ul>
-            <button class="nav-mobile-toggle" id="navToggle" aria-label="Toggle menu">
-                <span></span>
-                <span></span>
-                <span></span>
-            </button>
-        </div>
-    </nav>
+<div class="noise"></div>
+<div class="mesh-bg"><div class="mesh-orb a"></div><div class="mesh-orb b"></div><div class="mesh-orb c"></div></div>
+<div class="cursor-dot"></div><div class="cursor-ring"></div>
+<div class="scroll-progress"></div>
 
-    <!-- ==================== HERO ==================== -->
-    <section class="hero" id="hero">
-        <div class="hero-bg">
-            <div class="hero-bg-orb hero-bg-orb-1"></div>
-            <div class="hero-bg-orb hero-bg-orb-2"></div>
-            <div class="hero-bg-grid"></div>
+<!-- NAV -->
+<nav class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <svg viewBox="0 0 180 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- S -->
+        <path d="M3 24.5c.5 3.5 3.5 5.5 7.5 5.5s7-2 7-5.2c0-3.2-2.5-4.5-6-5.5l-3-1c-2.5-.7-3.5-1.8-3.5-3.3 0-2 2-3.5 4.5-3.5s4 1.5 4.5 3.2" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        <!-- O as shield/coin -->
+        <g transform="translate(22,3)">
+          <circle cx="15" cy="15" r="13.5" fill="none" stroke="#d4a843" stroke-width="2"/>
+          <circle cx="15" cy="15" r="9.5" fill="none" stroke="#d4a843" stroke-width=".8" opacity=".3"/>
+          <path d="M15 7l-7 3.5v5.5c0 4.2 2.8 8 7 9.5 4.2-1.5 7-5.3 7-9.5v-5.5L15 7z" fill="rgba(212,168,67,.1)" stroke="#d4a843" stroke-width="1.2"/>
+          <path d="M12 16l2 2 4-4" stroke="#d4a843" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <!-- LIDUS -->
+        <text x="56" y="26" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="22" fill="#fff" letter-spacing="-0.5">LIDUS</text>
+      </svg>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#problem" data-i18n="nav_problem">Problem</a>
+      <a href="#solution" data-i18n="nav_solution">Solution</a>
+      <a href="#how" data-i18n="nav_how">How It Works</a>
+      <a href="#features" data-i18n="nav_features">Features</a>
+      <a href="#security" data-i18n="nav_security">Security</a>
+      <div class="mobile-lang">
+        <button class="lang-option" data-lang="en" onclick="setLang('en')">&#127468;&#127463; English</button>
+        <button class="lang-option" data-lang="es" onclick="setLang('es')">&#127466;&#127480; Espanol</button>
+        <button class="lang-option" data-lang="de" onclick="setLang('de')">&#127465;&#127466; Deutsch</button>
+        <button class="lang-option" data-lang="fr" onclick="setLang('fr')">&#127467;&#127479; Francais</button>
+      </div>
+      <a href="app.html" class="mobile-cta" data-i18n="nav_cta">Request Demo</a>
+    </div>
+    <div class="nav-right">
+      <div class="lang-selector" id="lang-selector">
+        <button class="lang-btn" onclick="toggleLangDropdown()">&#127760; <span id="lang-current">EN</span> &#9662;</button>
+        <div class="lang-dropdown" id="lang-dropdown">
+          <button class="lang-option active" data-lang="en" onclick="setLang('en')">&#127468;&#127463; English</button>
+          <button class="lang-option" data-lang="es" onclick="setLang('es')">&#127466;&#127480; Espanol</button>
+          <button class="lang-option" data-lang="de" onclick="setLang('de')">&#127465;&#127466; Deutsch</button>
+          <button class="lang-option" data-lang="fr" onclick="setLang('fr')">&#127467;&#127479; Francais</button>
         </div>
-        <div class="container">
-            <div class="hero-content">
-                <div class="hero-badge reveal">
-                    <span class="hero-badge-dot"></span>
-                    Built on Solana &middot; StableHacks 2026
-                </div>
-                <h1 class="hero-title reveal reveal-delay-1">
-                    <span class="hero-title-line" data-i18n="heroLine1">Stablecoins,</span>
-                    <span class="hero-title-line text-gradient" data-i18n="heroLine2">Institutional-Grade.</span>
-                </h1>
-                <p class="hero-description reveal reveal-delay-2" data-i18n="heroDesc">
-                    The compliance and issuance layer that turns stablecoins into infrastructure institutions actually trust. Programmable rules. Real-time reserves. Zero compromise.
-                </p>
-                <div class="hero-actions reveal reveal-delay-3">
-                    <a href="#cta" class="btn btn-primary">
-                        <span data-i18n="heroBtn1">Start Building</span>
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </a>
-                    <a href="#how-it-works" class="btn btn-secondary">
-                        <span data-i18n="heroBtn2">See How It Works</span>
-                    </a>
-                </div>
-                <div class="hero-metrics reveal reveal-delay-4">
-                    <div class="hero-metric">
-                        <div class="hero-metric-value">$4T+</div>
-                        <div class="hero-metric-label" data-i18n="metricCapital">Capital waiting on the sidelines</div>
-                    </div>
-                    <div class="hero-metric">
-                        <div class="hero-metric-value">&lt;1s</div>
-                        <div class="hero-metric-label" data-i18n="metricSettlement">Settlement finality on Solana</div>
-                    </div>
-                    <div class="hero-metric">
-                        <div class="hero-metric-value">100%</div>
-                        <div class="hero-metric-label" data-i18n="metricTransparency">On-chain reserve transparency</div>
-                    </div>
-                </div>
+      </div>
+      <a href="app.html" class="nav-cta magnetic" data-i18n="nav_cta">Request Demo</a>
+    </div>
+    <button class="nav-mobile-btn" id="menuBtn" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="brand-pattern"></div>
+  <svg class="float-el" style="width:120px;height:120px;top:15%;right:8%" viewBox="0 0 100 100" fill="none"><path d="M50 10L20 25v25c0 18 12 34 30 40 18-6 30-22 30-40V25L50 10z" stroke="#d4a843" stroke-width="1" opacity=".3"/></svg>
+  <svg class="float-el" style="width:80px;height:80px;bottom:20%;left:5%" viewBox="0 0 80 80" fill="none"><circle cx="40" cy="40" r="35" stroke="#1a3a6b" stroke-width="1"/><circle cx="40" cy="40" r="25" stroke="#1a3a6b" stroke-width=".5" opacity=".4"/></svg>
+  <svg class="float-el" style="width:60px;height:60px;top:60%;right:15%" viewBox="0 0 60 60" fill="none"><rect x="10" y="10" width="40" height="40" rx="8" stroke="#d4a843" stroke-width=".8" opacity=".3"/><path d="M20 30h20M30 20v20" stroke="#d4a843" stroke-width=".5" opacity=".2"/></svg>
+
+  <div class="hero-inner">
+    <div class="hero-content">
+      <div class="hero-tag"><span class="pulse"></span><span data-i18n="hero_tag">Built on Solana &middot; Token-2022</span></div>
+      <h1 class="hero-headline display" id="heroHeadline">
+        <span class="word" data-i18n-word="hero_w1">The </span><span class="word gradient-text" data-i18n-word="hero_w2">Compliance Layer</span><br>
+        <span class="word" data-i18n-word="hero_w3">for Institutional </span><span class="word gradient-text-blue" data-i18n-word="hero_w4">Stablecoins.</span>
+      </h1>
+      <p class="hero-sub body-text" id="heroSub" data-i18n="hero_sub">Programmable compliance, institutional-grade controls, and real-time reserve attestation. Built for banks and fintechs on Solana.</p>
+      <div class="hero-ctas" id="heroCtas">
+        <a href="app.html" class="btn-primary magnetic" data-i18n="hero_cta1">Request Demo <span class="arrow">&rarr;</span></a>
+        <a href="#features" class="btn-ghost magnetic" data-i18n="hero_cta2">View Documentation <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l9.2-9.2M17 17V7.8H7.8"/></svg></a>
+      </div>
+    </div>
+    <div class="hero-dash-wrap" id="heroDash">
+      <div class="dash-glow"></div>
+      <div class="dash-mockup">
+        <div class="dash-topbar">
+          <div class="dash-dot r"></div><div class="dash-dot y"></div><div class="dash-dot g"></div>
+          <div class="dash-title-bar">SOLIDUS COMPLIANCE DASHBOARD</div>
+        </div>
+        <div class="dash-body">
+          <div class="dash-row">
+            <div class="dash-stat-card">
+              <div class="dash-stat-label">Total Supply</div>
+              <div class="dash-stat-val">$142.8M</div>
+              <div class="dash-stat-change up">+2.4% 24h</div>
             </div>
-        </div>
-    </section>
-
-    <!-- ==================== PROBLEM ==================== -->
-    <section class="problem" id="problem">
-        <div class="container">
-            <div class="section-label reveal" data-i18n="navProblem">The Problem</div>
-            <h2 class="section-title reveal reveal-delay-1" data-i18n="problemTitle">
-                Institutions can't trust<br>today's stablecoin rails.
-            </h2>
-            <div class="problem-grid">
-                <div class="problem-content reveal reveal-delay-2">
-                    <div class="problem-stat text-gradient">$4T+</div>
-                    <h3>in institutional capital sits on the sidelines.</h3>
-                    <p>
-                        Traditional stablecoin infrastructure was built for retail DeFi, not for institutions managing billions. There's no compliance at the protocol level, no programmable controls, and reserve attestation is a quarterly PDF.
-                    </p>
-                    <p>
-                        Institutions need infrastructure that meets their standards from day one — not workarounds bolted on after the fact.
-                    </p>
-                </div>
-                <div class="problem-cards">
-                    <div class="problem-card reveal reveal-delay-2">
-                        <div class="problem-card-icon">&#128683;</div>
-                        <h4>No Compliance Layer</h4>
-                        <p>KYC/AML enforcement doesn't exist at the protocol level. Regulatory exposure is unbounded.</p>
-                    </div>
-                    <div class="problem-card reveal reveal-delay-3">
-                        <div class="problem-card-icon">&#9888;&#65039;</div>
-                        <h4>No Programmable Controls</h4>
-                        <p>No whitelisting, velocity limits, or role-based permissions. Treasurers get a raw token and hope for the best.</p>
-                    </div>
-                    <div class="problem-card reveal reveal-delay-4">
-                        <div class="problem-card-icon">&#128065;</div>
-                        <h4>No Real-Time Transparency</h4>
-                        <p>Reserve attestations come quarterly as PDFs. Institutions need real-time, on-chain proof of backing — every block.</p>
-                    </div>
-                </div>
+            <div class="dash-stat-card">
+              <div class="dash-stat-label">Reserve Ratio</div>
+              <div class="dash-stat-val" style="color:var(--green)">100.0%</div>
+              <div class="dash-stat-change up">Fully Backed</div>
             </div>
-        </div>
-    </section>
-
-    <!-- ==================== HOW IT WORKS ==================== -->
-    <section class="how-it-works" id="how-it-works">
-        <div class="container">
-            <div class="section-label reveal" data-i18n="navHow">How It Works</div>
-            <h2 class="section-title reveal reveal-delay-1" data-i18n="howTitle">
-                Three steps. <span class="text-gradient">That's it.</span>
-            </h2>
-            <p class="section-subtitle reveal reveal-delay-2" style="margin: 0 auto;">
-                Solidus turns complex institutional compliance into a simple, programmable workflow on Solana.
-            </p>
-            <div class="steps">
-                <div class="step reveal reveal-delay-2">
-                    <div class="step-icon">
-                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                            <path d="M16 4v4M16 24v4M4 16h4M24 16h4M7.8 7.8l2.8 2.8M21.4 21.4l2.8 2.8M7.8 24.2l2.8-2.8M21.4 10.6l2.8-2.8" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"/>
-                            <circle cx="16" cy="16" r="5" stroke="#3b82f6" stroke-width="2"/>
-                        </svg>
-                    </div>
-                    <div class="step-number">Step 01</div>
-                    <h3>Configure</h3>
-                    <p>Define compliance rules — KYC tiers, transfer limits, whitelisted counterparties — through the dashboard or SDK.</p>
-                </div>
-                <div class="step reveal reveal-delay-3">
-                    <div class="step-icon">
-                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                            <rect x="6" y="8" width="20" height="16" rx="3" stroke="#d4a017" stroke-width="2"/>
-                            <path d="M6 14h20" stroke="#d4a017" stroke-width="2"/>
-                            <circle cx="11" cy="20" r="1.5" fill="#d4a017"/>
-                        </svg>
-                    </div>
-                    <div class="step-number">Step 02</div>
-                    <h3>Issue</h3>
-                    <p>Stablecoins are minted through the Solidus program with compliance rules embedded via Token-2022 extensions.</p>
-                </div>
-                <div class="step reveal reveal-delay-4">
-                    <div class="step-icon">
-                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                            <path d="M8 16l5 5L24 10" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                            <circle cx="16" cy="16" r="12" stroke="#22c55e" stroke-width="2"/>
-                        </svg>
-                    </div>
-                    <div class="step-number">Step 03</div>
-                    <h3>Operate</h3>
-                    <p>Every transfer is validated on-chain against your ruleset. Reserve status updated in real-time via oracles. Full audit trail.</p>
-                </div>
+          </div>
+          <div class="dash-row">
+            <div class="dash-stat-card">
+              <div class="dash-stat-label">Active Holders</div>
+              <div class="dash-stat-val">1,247</div>
             </div>
-        </div>
-    </section>
-
-    <!-- ==================== FEATURES ==================== -->
-    <section class="features" id="features">
-        <div class="container">
-            <div class="features-header">
-                <div class="section-label reveal" data-i18n="navFeatures">Features</div>
-                <h2 class="section-title reveal reveal-delay-1">
-                    Everything institutions need.<br><span class="text-gradient">Nothing they don't.</span>
-                </h2>
-                <p class="section-subtitle reveal reveal-delay-2">
-                    Built for treasurers, compliance teams, and protocol engineers who refuse to compromise.
-                </p>
+            <div class="dash-stat-card">
+              <div class="dash-stat-label">Compliance</div>
+              <div class="dash-stat-val" style="color:var(--gold)">KYC/AML</div>
             </div>
-            <div class="features-grid">
-                <div class="feature-card reveal reveal-delay-1">
-                    <div class="feature-card-content">
-                        <div class="feature-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5z" stroke="#3b82f6" stroke-width="1.5"/><path d="M12 12l9-5M12 12v10M12 12L3 7" stroke="#3b82f6" stroke-width="1.5"/></svg>
-                        </div>
-                        <h3>Token-2022 Native</h3>
-                        <p>Built directly on Solana's Token Extensions — transfer hooks, confidential transfers, and metadata extensions, not wrappers.</p>
-                    </div>
-                </div>
-                <div class="feature-card reveal reveal-delay-2">
-                    <div class="feature-card-content">
-                        <div class="feature-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="11" width="18" height="10" rx="2" stroke="#d4a017" stroke-width="1.5"/><path d="M7 11V7a5 5 0 0110 0v4" stroke="#d4a017" stroke-width="1.5"/><circle cx="12" cy="16" r="1.5" fill="#d4a017"/></svg>
-                        </div>
-                        <h3>On-Chain KYC</h3>
-                        <p>Credential verification embedded at the mint level. Only verified addresses can hold, send, or receive. Non-negotiable.</p>
-                    </div>
-                </div>
-                <div class="feature-card reveal reveal-delay-3">
-                    <div class="feature-card-content">
-                        <div class="feature-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M3 3v18h18" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round"/><path d="M7 15l4-4 3 3 6-6" stroke="#22c55e" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                        </div>
-                        <h3>Live Reserve Proof</h3>
-                        <p>Oracle-powered reserve attestation updated every block. Not quarterly PDFs — real-time, on-chain, verifiable by anyone.</p>
-                    </div>
-                </div>
-                <div class="feature-card reveal reveal-delay-1">
-                    <div class="feature-card-content">
-                        <div class="feature-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#3b82f6" stroke-width="1.5"/><path d="M12 7v5l3.5 3.5" stroke="#3b82f6" stroke-width="1.5" stroke-linecap="round"/></svg>
-                        </div>
-                        <h3>Velocity Controls</h3>
-                        <p>Set transfer limits per wallet, per time window. Rate limiting at the protocol level — not an afterthought.</p>
-                    </div>
-                </div>
-                <div class="feature-card reveal reveal-delay-2">
-                    <div class="feature-card-content">
-                        <div class="feature-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" stroke="#d4a017" stroke-width="1.5"/><circle cx="9" cy="7" r="4" stroke="#d4a017" stroke-width="1.5"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" stroke="#d4a017" stroke-width="1.5"/></svg>
-                        </div>
-                        <h3>Role-Based Access</h3>
-                        <p>Issuer, compliance officer, treasurer — each role has distinct permissions enforced by the program. Separation of duties, on-chain.</p>
-                    </div>
-                </div>
-                <div class="feature-card reveal reveal-delay-3">
-                    <div class="feature-card-content">
-                        <div class="feature-icon">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6z" stroke="#22c55e" stroke-width="1.5"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8" stroke="#22c55e" stroke-width="1.5"/></svg>
-                        </div>
-                        <h3>Full Audit Trail</h3>
-                        <p>Every mint, burn, transfer, and policy change is recorded immutably. Compliance teams get a complete, exportable history.</p>
-                    </div>
-                </div>
-            </div>
+          </div>
+          <div class="dash-chart">
+            <svg viewBox="0 0 340 48" preserveAspectRatio="none">
+              <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d4a843" stop-opacity=".3"/><stop offset="1" stop-color="#d4a843" stop-opacity="0"/></linearGradient></defs>
+              <path d="M0 40 Q40 35 80 30 T160 22 T240 18 T320 12 L340 10 L340 48 L0 48Z" fill="url(#cg)"/>
+              <path d="M0 40 Q40 35 80 30 T160 22 T240 18 T320 12 L340 10" fill="none" stroke="#d4a843" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="dash-table">
+            <div class="dash-table-head"><span>Address</span><span>Amount</span><span>Status</span></div>
+            <div class="dash-table-row"><span style="font-family:monospace;font-size:.45rem">0x7a3B...4f2E</span><span>$2.4M</span><span><span class="status active">Active</span></span></div>
+            <div class="dash-table-row"><span style="font-family:monospace;font-size:.45rem">0x9c1D...8a3F</span><span>$890K</span><span><span class="status active">Active</span></span></div>
+            <div class="dash-table-row"><span style="font-family:monospace;font-size:.45rem">0x2e5F...1b7C</span><span>$1.2M</span><span><span class="status pending">Review</span></span></div>
+            <div class="dash-table-row"><span style="font-family:monospace;font-size:.45rem">0x4d8A...6c9E</span><span>$150K</span><span><span class="status frozen">Frozen</span></span></div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- ==================== TECH STACK ==================== -->
-    <section class="tech" id="tech">
-        <div class="container">
-            <div class="section-label reveal" data-i18n="navTech">Tech Stack</div>
-            <h2 class="section-title reveal reveal-delay-1">
-                Built on the <span class="text-gradient">best foundations.</span>
-            </h2>
-            <p class="section-subtitle reveal reveal-delay-2" style="margin: 0 auto;">
-                Every technology choice was made for a reason: speed, security, and institutional readiness.
-            </p>
-            <div class="tech-grid reveal reveal-delay-3">
-                <div class="tech-pill">
-                    <span class="tech-pill-icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#9945FF" stroke-width="1.5"/><path d="M5 12.5h10M5 7.5h10M5 10h10" stroke="#9945FF" stroke-width="1.5" stroke-linecap="round"/></svg>
-                    </span>
-                    Solana
-                </div>
-                <div class="tech-pill">
-                    <span class="tech-pill-icon">&#9875;</span>
-                    Anchor (Rust)
-                </div>
-                <div class="tech-pill">
-                    <span class="tech-pill-icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="3" stroke="#60a5fa" stroke-width="1.5"/><path d="M7 10h6M10 7v6" stroke="#60a5fa" stroke-width="1.5" stroke-linecap="round"/></svg>
-                    </span>
-                    Token-2022
-                </div>
-                <div class="tech-pill">
-                    <span class="tech-pill-icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 2l8 5v6l-8 5-8-5V7l8-5z" stroke="#E6DEDD" stroke-width="1.5"/></svg>
-                    </span>
-                    Pyth Network
-                </div>
-                <div class="tech-pill">
-                    <span class="tech-pill-icon">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" fill="#22c55e"/><circle cx="10" cy="10" r="7" stroke="#22c55e" stroke-width="1.5"/></svg>
-                    </span>
-                    Switchboard
-                </div>
-                <div class="tech-pill">
-                    <span class="tech-pill-icon">&#9883;</span>
-                    Node.js
-                </div>
-            </div>
+<!-- MARQUEE -->
+<section class="marquee-section">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item"><span class="sep"></span>AMINA Bank</span>
+    <span class="marquee-item"><span class="sep"></span>UBS</span>
+    <span class="marquee-item"><span class="sep"></span>Fireblocks</span>
+    <span class="marquee-item"><span class="sep"></span>Keyrock</span>
+    <span class="marquee-item"><span class="sep"></span>Solana Foundation</span>
+    <span class="marquee-item"><span class="sep"></span>SIX Group</span>
+    <span class="marquee-item"><span class="sep"></span>AMINA Bank</span>
+    <span class="marquee-item"><span class="sep"></span>UBS</span>
+    <span class="marquee-item"><span class="sep"></span>Fireblocks</span>
+    <span class="marquee-item"><span class="sep"></span>Keyrock</span>
+    <span class="marquee-item"><span class="sep"></span>Solana Foundation</span>
+    <span class="marquee-item"><span class="sep"></span>SIX Group</span>
+    <span class="marquee-item"><span class="sep"></span>AMINA Bank</span>
+    <span class="marquee-item"><span class="sep"></span>UBS</span>
+    <span class="marquee-item"><span class="sep"></span>Fireblocks</span>
+    <span class="marquee-item"><span class="sep"></span>Keyrock</span>
+    <span class="marquee-item"><span class="sep"></span>Solana Foundation</span>
+    <span class="marquee-item"><span class="sep"></span>SIX Group</span>
+  </div>
+</section>
+
+<!-- PROBLEM -->
+<section class="problem" id="problem">
+  <div class="brand-pattern"></div>
+  <div class="problem-inner">
+    <div class="problem-big-number" aria-hidden="true">$4T+</div>
+    <div class="problem-content">
+      <div class="reveal">
+        <span class="caption" style="color:var(--gold);display:block;margin-bottom:16px" data-i18n="the_problem">The Problem</span>
+        <h2 class="h2-title" style="margin-bottom:16px"><span class="gradient-text" data-i18n="problem_hl_gold">$4T+ institutional capital</span> <span data-i18n="problem_hl_rest">sitting on the sidelines.</span></h2>
+        <p class="problem-desc body-text" data-i18n="problem_desc">Banks and financial institutions want to issue stablecoins but lack the compliance infrastructure to do it safely. Without programmable compliance, institutional adoption remains impossible.</p>
+      </div>
+      <div class="problem-cards">
+        <div class="prob-card stagger-child breathe">
+          <div class="card-icon" style="background:rgba(239,68,68,.12)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4m0 4h.01"/></svg>
+          </div>
+          <h3 data-i18n="prob1_title">No Compliance Layer</h3>
+          <p data-i18n="prob1_desc">Existing stablecoin infrastructure lacks built-in KYC/AML controls required by regulators worldwide.</p>
         </div>
-    </section>
-
-    <!-- ==================== CTA ==================== -->
-    <section class="cta" id="cta">
-        <div class="cta-bg">
-            <div class="cta-bg-orb cta-bg-orb-1"></div>
-            <div class="cta-bg-orb cta-bg-orb-2"></div>
+        <div class="prob-card stagger-child breathe">
+          <div class="card-icon" style="background:var(--gold-dim)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </div>
+          <h3 data-i18n="prob2_title">Fragmented Controls</h3>
+          <p data-i18n="prob2_desc">Freeze, whitelist, and role management require custom smart contracts, increasing risk and cost.</p>
         </div>
-        <div class="container">
-            <div class="cta-content">
-                <div class="section-label reveal" data-i18n="getStarted">Get Started</div>
-                <h2 class="cta-title reveal reveal-delay-1">
-                    Ready to build stablecoins<br><span class="text-gradient">institutions trust?</span>
-                </h2>
-                <p class="cta-subtitle reveal reveal-delay-2">
-                    Solidus is open-source and live on Solana Devnet. Start integrating today.
-                </p>
-                <div class="cta-actions reveal reveal-delay-3">
-                    <a href="https://github.com" target="_blank" class="btn btn-primary">
-                        View on GitHub
-                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                    </a>
-                    <a href="https://dorahacks.io" target="_blank" class="btn btn-secondary">
-                        DoraHacks Submission
-                    </a>
-                </div>
-            </div>
+        <div class="prob-card stagger-child breathe">
+          <div class="card-icon" style="background:rgba(56,189,248,.12)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/><path d="M1 1l22 22" stroke-width="1.5" opacity=".4"/></svg>
+          </div>
+          <h3 data-i18n="prob3_title">Opaque Reserves</h3>
+          <p data-i18n="prob3_desc">Institutions cannot verify reserve backing in real-time, creating trust gaps that prevent adoption.</p>
         </div>
-    </section>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- ==================== FOOTER ==================== -->
-    <footer class="footer">
-        <div class="container">
-            <div class="footer-inner">
-                <div class="footer-brand">
-                    <div class="footer-brand-logo">
-                        <div class="nav-logo-icon" style="width:28px;height:28px;font-size:14px;border-radius:7px;">S</div>
-                        Solidus
-                    </div>
-                    <p>Institutional-grade stablecoin infrastructure, built on Solana. Open-source. Uncompromising.</p>
-                </div>
-                <div class="footer-links">
-                    <div class="footer-col">
-                        <h4>Protocol</h4>
-                        <ul>
-                            <li><a href="#how-it-works">How It Works</a></li>
-                            <li><a href="#features">Features</a></li>
-                            <li><a href="#tech">Tech Stack</a></li>
-                            <li><a href="#">Documentation</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Community</h4>
-                        <ul>
-                            <li><a href="https://github.com" target="_blank">GitHub</a></li>
-                            <li><a href="https://twitter.com" target="_blank">Twitter / X</a></li>
-                            <li><a href="https://discord.com" target="_blank">Discord</a></li>
-                            <li><a href="https://dorahacks.io" target="_blank">DoraHacks</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-col">
-                        <h4>Resources</h4>
-                        <ul>
-                            <li><a href="#">Whitepaper</a></li>
-                            <li><a href="#">API Reference</a></li>
-                            <li><a href="#">Brand Kit</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 Solidus Protocol. Built for StableHacks on DoraHacks.</p>
-                <div class="footer-bottom-links">
-                    <a href="#">Privacy</a>
-                    <a href="#">Terms</a>
-                    <a href="#">Security</a>
-                </div>
-            </div>
+<!-- SOLUTION -->
+<section class="pillars" id="solution">
+  <div class="pillars-inner">
+    <div class="reveal" style="text-align:center">
+      <span class="caption" style="color:var(--gold);display:block;margin-bottom:12px" data-i18n="the_solution">The Solution</span>
+      <h2 class="h2-title" data-i18n="solution_headline">Three pillars of <span class="gradient-text">institutional trust.</span></h2>
+    </div>
+    <div class="pillars-grid">
+      <div class="pillar-card stagger-child" data-tilt>
+        <div class="card-icon ic-gold">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
         </div>
-    </footer>
+        <h3 data-i18n="pillar1_title">Programmable Compliance</h3>
+        <p data-i18n="pillar1_desc">Embed KYC/AML rules directly into the token. Every transfer is automatically validated against your compliance framework before execution.</p>
+      </div>
+      <div class="pillar-card stagger-child" data-tilt>
+        <div class="card-icon ic-blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/><circle cx="12" cy="16" r="1"/></svg>
+        </div>
+        <h3 data-i18n="pillar2_title">Institutional Controls</h3>
+        <p data-i18n="pillar2_desc">Freeze/unfreeze accounts, enforce whitelists, and manage roles with granular precision. Built-in authority separation for enterprise governance.</p>
+      </div>
+      <div class="pillar-card stagger-child" data-tilt>
+        <div class="card-icon ic-green">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h3 data-i18n="pillar3_title">Real-Time Reserves</h3>
+        <p data-i18n="pillar3_desc">On-chain reserve attestation updated every block. Every token is backed 1:1 with cryptographic proof visible to all stakeholders.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- ==================== SCRIPTS ==================== -->
-    <script>
-        // ---- Intersection Observer for scroll animations ----
-        const revealElements = document.querySelectorAll('.reveal');
-        const revealObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                }
-            });
-        }, {
-            threshold: 0.1,
-            rootMargin: '0px 0px -40px 0px'
-        });
+<!-- HOW IT WORKS -->
+<section class="how-it-works" id="how">
+  <div class="how-inner">
+    <div class="reveal" style="text-align:center">
+      <span class="caption" style="color:var(--gold);display:block;margin-bottom:12px" data-i18n="how_cap">How It Works</span>
+      <h2 class="h2-title">From configuration to <span class="gradient-text" data-i18n="how_hl">operation</span> in three steps.</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step stagger-child">
+        <div class="how-step-num">1</div>
+        <h3 data-i18n="step1_title">Configure</h3>
+        <p data-i18n="step1_desc">Define your compliance rules, whitelist requirements, and role-based access controls through our institutional dashboard.</p>
+      </div>
+      <div class="how-connector reveal">
+        <svg viewBox="0 0 48 24" fill="none"><path d="M4 12h32M36 6l8 6-8 6" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/></svg>
+      </div>
+      <div class="how-step stagger-child">
+        <div class="how-step-num">2</div>
+        <h3 data-i18n="step2_title">Issue</h3>
+        <p data-i18n="step2_desc">Mint compliant stablecoins on Solana using Token-2022 extensions. Each token carries embedded compliance metadata.</p>
+      </div>
+      <div class="how-connector reveal">
+        <svg viewBox="0 0 48 24" fill="none"><path d="M4 12h32M36 6l8 6-8 6" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".5"/></svg>
+      </div>
+      <div class="how-step stagger-child">
+        <div class="how-step-num">3</div>
+        <h3 data-i18n="step3_title">Operate</h3>
+        <p data-i18n="step3_desc">Monitor reserves, manage compliance, and control token lifecycle in real-time. Full audit trail on every action.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-        revealElements.forEach(el => revealObserver.observe(el));
-
-        // ---- Navbar scroll effect ----
-        const nav = document.getElementById('nav');
-        let lastScroll = 0;
-
-        window.addEventListener('scroll', () => {
-            const currentScroll = window.pageYOffset;
-            if (currentScroll > 20) {
-                nav.classList.add('scrolled');
-            } else {
-                nav.classList.remove('scrolled');
+<!-- BENTO FEATURES -->
+<section class="bento" id="features">
+  <div class="bento-inner">
+    <div class="bento-header reveal">
+      <span class="caption" style="color:var(--gold);display:block;margin-bottom:12px" data-i18n="features_cap">Features</span>
+      <h2 class="h2-title">Enterprise-grade tools for<br><span class="gradient-text" data-i18n="features_hl">institutional stablecoins</span></h2>
+    </div>
+    <div class="bento-grid">
+      <!-- 1: Compliance Hooks (span 2) -->
+      <div class="bento-card card stagger-child" data-tilt style="border-left:3px solid var(--gold)">
+        <div class="card-icon ic-gold">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        </div>
+        <h3 class="h3-title" data-i18n="f1_title">Compliance Hooks</h3>
+        <p data-i18n="f1_desc">Pre-transfer validation hooks that enforce KYC/AML checks on every transaction. Rules execute on-chain before any token movement.</p>
+        <div class="mini-preview">
+          <div class="mini-code">
+            <span class="cm">// Transfer hook validation</span><br>
+            <span class="kw">fn</span> <span class="fn">validate_transfer</span>(ctx, amount) {<br>
+            &nbsp;&nbsp;<span class="kw">require</span>(sender.kyc == <span class="str">Verified</span>);<br>
+            &nbsp;&nbsp;<span class="kw">require</span>(recipient.whitelist == <span class="str">true</span>);<br>
+            &nbsp;&nbsp;<span class="kw">require</span>(amount &lt;= daily_limit);<br>
+            &nbsp;&nbsp;<span class="kw">emit</span> <span class="fn">ComplianceCheck</span>(<span class="str">PASS</span>);<br>
             }
-            lastScroll = currentScroll;
-        }, { passive: true });
+          </div>
+        </div>
+      </div>
+      <!-- 2: Freeze/Unfreeze -->
+      <div class="bento-card card stagger-child" data-tilt style="border-left:3px solid var(--cyan)">
+        <div class="card-icon ic-blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>
+        </div>
+        <h3 class="h3-title" data-i18n="f2_title">Freeze / Unfreeze</h3>
+        <p data-i18n="f2_desc">Instantly freeze suspicious accounts or unfreeze cleared addresses. Regulatory compliance at the speed of blockchain.</p>
+      </div>
+      <!-- 3: Whitelist Management -->
+      <div class="bento-card card stagger-child" data-tilt style="border-left:3px solid var(--green)">
+        <div class="card-icon ic-green">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8l2 2 4-4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h3 class="h3-title" data-i18n="f3_title">Whitelist Management</h3>
+        <p data-i18n="f3_desc">Manage approved addresses with institutional-grade whitelist controls. Only verified entities can hold or transfer tokens.</p>
+        <div class="mini-preview">
+          <div class="mini-wl">
+            <div class="mini-wl-row"><span class="mini-wl-addr">0x7a3B...4f2E</span><span class="mini-wl-st ok">Approved</span></div>
+            <div class="mini-wl-row"><span class="mini-wl-addr">0x9c1D...8a3F</span><span class="mini-wl-st ok">Approved</span></div>
+            <div class="mini-wl-row"><span class="mini-wl-addr">0x2e5F...1b7C</span><span class="mini-wl-st wait">Pending</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 4: Reserve Proof (span 2) -->
+      <div class="bento-card card stagger-child" data-tilt style="border-left:3px solid var(--gold)">
+        <div class="card-icon ic-gold">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+        </div>
+        <h3 class="h3-title" data-i18n="f4_title">Reserve Proof</h3>
+        <p data-i18n="f4_desc">Cryptographic attestation of reserves updated in real-time. Every token is provably backed 1:1 with fiat collateral, viewable on-chain by anyone.</p>
+        <div class="mini-preview">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
+            <div style="text-align:center;flex:1">
+              <div style="font-size:.5rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Supply</div>
+              <div style="font-family:var(--head);font-size:.85rem;font-weight:700;color:var(--white)">$142.8M</div>
+            </div>
+            <div style="font-size:.7rem;color:var(--green);font-weight:700">=</div>
+            <div style="text-align:center;flex:1">
+              <div style="font-size:.5rem;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Reserves</div>
+              <div style="font-family:var(--head);font-size:.85rem;font-weight:700;color:var(--green)">$142.8M</div>
+            </div>
+            <div style="width:32px;height:32px;border-radius:50%;background:rgba(34,197,94,.1);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- 5: Role-Based Access -->
+      <div class="bento-card card stagger-child" data-tilt style="border-left:3px solid var(--cyan)">
+        <div class="card-icon ic-blue">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h3 class="h3-title" data-i18n="f5_title">Role-Based Access</h3>
+        <p data-i18n="f5_desc">Separate authorities for minting, freezing, and compliance. No single point of failure in institutional governance.</p>
+        <div class="mini-preview">
+          <div class="mini-roles">
+            <div class="mini-role"><div class="mini-role-c" style="background:linear-gradient(135deg,var(--gold),#b8941f)">M</div><div class="mini-role-l">Minter</div></div>
+            <div class="mini-role"><div class="mini-role-c" style="background:linear-gradient(135deg,var(--cyan),#0284c7)">F</div><div class="mini-role-l">Freezer</div></div>
+            <div class="mini-role"><div class="mini-role-c" style="background:linear-gradient(135deg,var(--green),#16a34a)">C</div><div class="mini-role-l">Compliance</div></div>
+          </div>
+        </div>
+      </div>
+      <!-- 6: Token-2022 -->
+      <div class="bento-card card stagger-child" data-tilt style="border-left:3px solid var(--gold)">
+        <div class="card-icon ic-gold">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2" stroke-linecap="round"/><path d="M9 9h.01M15 9h.01" stroke-width="2.5" stroke-linecap="round"/></svg>
+        </div>
+        <h3 class="h3-title" data-i18n="f6_title">Token-2022 Native</h3>
+        <p data-i18n="f6_desc">Built on Solana's Token-2022 standard with transfer hooks, confidential transfers, and metadata extensions. Future-proof by design.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-        // ---- Mobile menu toggle ----
-        const navToggle = document.getElementById('navToggle');
-        const navLinks = document.getElementById('navLinks');
+<!-- SECURITY -->
+<section class="security" id="security">
+  <div class="security-inner">
+    <div class="reveal">
+      <span class="caption" style="color:var(--gold);display:block;margin-bottom:12px" data-i18n="security_cap">Security</span>
+      <h2 class="h2-title">Built for institutions.<br><span class="gradient-text" data-i18n="security_hl">Secured by design.</span></h2>
+    </div>
+    <div class="sec-grid">
+      <div class="sec-item stagger-child">
+        <div class="sec-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h4 data-i18n="sec1_title">Audited Smart Contracts</h4>
+        <p data-i18n="sec1_desc">Multiple independent security audits by top-tier firms.</p>
+      </div>
+      <div class="sec-item stagger-child">
+        <div class="sec-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+        </div>
+        <h4 data-i18n="sec2_title">Multi-Sig Governance</h4>
+        <p data-i18n="sec2_desc">Critical operations require multi-signature approval from authorized parties.</p>
+      </div>
+      <div class="sec-item stagger-child">
+        <div class="sec-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        </div>
+        <h4 data-i18n="sec3_title">Regulatory Compliant</h4>
+        <p data-i18n="sec3_desc">Designed to meet MiCA, Basel III, and global regulatory standards.</p>
+      </div>
+      <div class="sec-item stagger-child">
+        <div class="sec-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h4 data-i18n="sec4_title">Real-Time Monitoring</h4>
+        <p data-i18n="sec4_desc">24/7 automated surveillance with instant anomaly detection and alerting.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-        navToggle.addEventListener('click', () => {
-            navLinks.classList.toggle('open');
-        });
+<!-- STATS -->
+<section class="stats" id="stats">
+  <div class="stats-inner">
+    <div class="stat-item reveal"><div class="stat-num" data-target="4" data-prefix="$" data-suffix="T+">0</div><div class="stat-label" data-i18n="stat1_label">Addressable Market</div></div>
+    <div class="stat-item reveal"><div class="stat-num" data-target="1" data-prefix="<" data-suffix="s">0</div><div class="stat-label" data-i18n="stat2_label">Settlement Time</div></div>
+    <div class="stat-item reveal"><div class="stat-num" data-target="100" data-prefix="" data-suffix="%">0</div><div class="stat-label" data-i18n="stat3_label">Reserve Backed</div></div>
+    <div class="stat-item reveal"><div class="stat-num" data-target="3" data-prefix="" data-suffix="">0</div><div class="stat-label" data-i18n="stat4_label">Authority Roles</div></div>
+  </div>
+</section>
 
-        // Close mobile menu when a link is clicked
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navLinks.classList.remove('open');
-            });
-        });
+<!-- CTA -->
+<section class="cta-section" id="cta">
+  <div class="cta-inner reveal">
+    <span class="caption" style="color:var(--gold);display:block;margin-bottom:16px" data-i18n="cta_cap">Get Started</span>
+    <h2>Ready to build the future of<br><span class="gradient-text" data-i18n="cta_hl">institutional stablecoins</span>?</h2>
+    <p class="body-text" data-i18n="cta_desc">Join the institutions already building compliant stablecoin infrastructure on Solana. Request a demo or explore our documentation.</p>
+    <div class="cta-buttons">
+      <a href="app.html" class="btn-primary magnetic" data-i18n="cta_demo">Request Demo <span class="arrow">&rarr;</span></a>
+      <a href="app.html" class="btn-ghost magnetic" data-i18n="cta_docs">View Documentation <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17l9.2-9.2M17 17V7.8H7.8"/></svg></a>
+    </div>
+  </div>
+</section>
 
-        // ---- Smooth scroll for anchor links ----
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    const offset = 80;
-                    const position = target.getBoundingClientRect().top + window.pageYOffset - offset;
-                    window.scrollTo({
-                        top: position,
-                        behavior: 'smooth'
-                    });
-                }
-            });
-        });
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-left">
+      <a href="#" class="footer-logo">
+        <svg viewBox="0 0 180 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 24.5c.5 3.5 3.5 5.5 7.5 5.5s7-2 7-5.2c0-3.2-2.5-4.5-6-5.5l-3-1c-2.5-.7-3.5-1.8-3.5-3.3 0-2 2-3.5 4.5-3.5s4 1.5 4.5 3.2" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <g transform="translate(22,3)"><circle cx="15" cy="15" r="13" fill="none" stroke="#d4a843" stroke-width="1.5"/><path d="M15 7l-7 3.5v5.5c0 4.2 2.8 8 7 9.5 4.2-1.5 7-5.3 7-9.5v-5.5L15 7z" fill="rgba(212,168,67,.1)" stroke="#d4a843" stroke-width=".8"/></g>
+          <text x="56" y="26" font-family="Space Grotesk,sans-serif" font-weight="700" font-size="20" fill="#fff" letter-spacing="-0.5">LIDUS</text>
+        </svg>
+      </a>
+      <div class="footer-links">
+        <a href="#" data-i18n="footer_privacy">Privacy</a>
+        <a href="#" data-i18n="footer_terms">Terms</a>
+        <a href="#" data-i18n="footer_contact">Contact</a>
+        <a href="#" data-i18n="footer_docs">Docs</a>
+      </div>
+    </div>
+    <div class="footer-badge"><span class="chain-dot"></span>Built on Solana</div>
+  </div>
+</footer>
 
-        // ---- Parallax on hero orbs ----
-        window.addEventListener('mousemove', (e) => {
-            const x = (e.clientX / window.innerWidth - 0.5) * 20;
-            const y = (e.clientY / window.innerHeight - 0.5) * 20;
-            const orb1 = document.querySelector('.hero-bg-orb-1');
-            const orb2 = document.querySelector('.hero-bg-orb-2');
-            if (orb1) orb1.style.transform = `translate(${x}px, ${y}px)`;
-            if (orb2) orb2.style.transform = `translate(${-x}px, ${-y}px)`;
-        }, { passive: true });
+<script>
+/* ═══ CURSOR ═══ */
+(function(){
+  const dot=document.querySelector('.cursor-dot'),ring=document.querySelector('.cursor-ring');
+  if(!dot||matchMedia('(pointer:coarse)').matches)return;
+  let mx=0,my=0,dx=0,dy=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
+  const interactives='a,button,[data-tilt],.magnetic,input';
+  document.addEventListener('mouseover',e=>{if(e.target.closest(interactives)){dot.classList.add('active');ring.classList.add('active')}});
+  document.addEventListener('mouseout',e=>{if(e.target.closest(interactives)){dot.classList.remove('active');ring.classList.remove('active')}});
+  (function loop(){
+    dx+=(mx-dx)*.18;dy+=(my-dy)*.18;
+    rx+=(mx-rx)*.08;ry+=(my-ry)*.08;
+    dot.style.transform=`translate(${dx-dot.offsetWidth/2}px,${dy-dot.offsetHeight/2}px)`;
+    ring.style.transform=`translate(${rx-ring.offsetWidth/2}px,${ry-ring.offsetHeight/2}px)`;
+    requestAnimationFrame(loop);
+  })();
+})();
 
-        // ---- Counter animation for hero metrics ----
-        function animateCounter(element, target, suffix = '') {
-            const duration = 2000;
-            const start = performance.now();
-            const isFloat = target % 1 !== 0;
+/* ═══ SCROLL PROGRESS ═══ */
+(function(){
+  const bar=document.querySelector('.scroll-progress');
+  window.addEventListener('scroll',()=>{
+    const h=document.documentElement.scrollHeight-window.innerHeight;
+    bar.style.width=(window.scrollY/h*100)+'%';
+  },{passive:true});
+})();
 
-            function update(currentTime) {
-                const elapsed = currentTime - start;
-                const progress = Math.min(elapsed / duration, 1);
-                const eased = 1 - Math.pow(1 - progress, 4);
-                const current = eased * target;
+/* ═══ NAV ═══ */
+(function(){
+  const nav=document.getElementById('nav'),btn=document.getElementById('menuBtn'),links=document.getElementById('navLinks');
+  window.addEventListener('scroll',()=>{nav.classList.toggle('shrink',window.scrollY>60)},{passive:true});
+  btn.addEventListener('click',()=>links.classList.toggle('open'));
+})();
 
-                if (isFloat) {
-                    element.textContent = current.toFixed(1) + suffix;
-                } else {
-                    element.textContent = Math.floor(current) + suffix;
-                }
+/* ═══ HERO CHAR-BY-CHAR with spring physics ═══ */
+(function(){
+  const headline=document.getElementById('heroHeadline');
+  const words=headline.querySelectorAll('.word');
+  let charIndex=0;
+  words.forEach(word=>{
+    const text=word.textContent;
+    const cls=word.className.replace('word','').trim();
+    word.textContent='';
+    word.setAttribute('aria-label',text);
+    for(let i=0;i<text.length;i++){
+      const span=document.createElement('span');
+      span.className='char';
+      if(cls)cls.split(' ').forEach(c=>c&&span.classList.add(c));
+      span.textContent=text[i]===' '?'\u00A0':text[i];
+      const baseDelay=charIndex*30;
+      const randomOffset=Math.random()*18-9;
+      span.style.transitionDelay=(baseDelay+randomOffset)+'ms';
+      word.appendChild(span);
+      charIndex++;
+    }
+  });
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{
+      headline.querySelectorAll('.char').forEach(c=>{
+        c.style.opacity='1';c.style.transform='translateY(0) rotate(0)';
+        c.style.transition='opacity .6s cubic-bezier(0.22,1,0.36,1), transform .7s cubic-bezier(0.34,1.56,0.64,1)';
+      });
+      setTimeout(()=>{
+        const tag=document.querySelector('.hero-tag');
+        tag.style.transition='all .7s cubic-bezier(0.22,1,0.36,1)';tag.style.opacity='1';tag.style.transform='none';
+      },200);
+      setTimeout(()=>{
+        const sub=document.getElementById('heroSub');
+        sub.style.transition='all .8s cubic-bezier(0.22,1,0.36,1)';sub.style.opacity='1';sub.style.transform='none';
+      },500);
+      setTimeout(()=>{
+        const ctas=document.getElementById('heroCtas');
+        ctas.style.transition='all .8s cubic-bezier(0.22,1,0.36,1)';ctas.style.opacity='1';ctas.style.transform='none';
+      },700);
+    },200);
+  });
+})();
 
-                if (progress < 1) {
-                    requestAnimationFrame(update);
-                } else {
-                    element.textContent = target + suffix;
-                }
-            }
-
-            requestAnimationFrame(update);
+/* ═══ SCROLL REVEAL with elastic overshoot ═══ */
+(function(){
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(e.isIntersecting){
+        e.target.classList.add('visible');
+        if(e.target.classList.contains('stagger-child')){
+          const siblings=Array.from(e.target.parentElement.children).filter(c=>c.classList.contains('stagger-child'));
+          siblings.forEach((s,i)=>{setTimeout(()=>s.classList.add('visible'),i*120)});
         }
+        obs.unobserve(e.target);
+      }
+    });
+  },{threshold:0.12,rootMargin:'0px 0px -40px 0px'});
+  document.querySelectorAll('.reveal,.reveal-left,.reveal-right,.stagger-child').forEach(el=>obs.observe(el));
+})();
 
-        // Observe hero metrics for counter animation
-        const metricsObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    const metrics = entry.target.querySelectorAll('.hero-metric-value');
-                    // Metrics are pre-set with text, animation is visual only via CSS
-                    metricsObserver.unobserve(entry.target);
-                }
-            });
-        }, { threshold: 0.5 });
+/* ═══ DASHBOARD PARALLAX with sine-wave float ═══ */
+(function(){
+  const wrap=document.getElementById('heroDash');
+  if(!wrap)return;
+  let time=0;
+  function animate(){
+    time+=0.012;
+    const floatY=Math.sin(time*1.0)*6;
+    const floatX=Math.sin(time*0.7+1.5)*3;
+    const rotate=Math.sin(time*0.5+0.8)*1;
+    const mockup=wrap.querySelector('.dash-mockup');
+    if(mockup)mockup.style.transform=`translateY(${floatY}px) translateX(${floatX}px) rotate(${rotate}deg)`;
+    requestAnimationFrame(animate);
+  }
+  animate();
+  window.addEventListener('scroll',()=>{
+    wrap.style.transform=`translateY(${window.scrollY*-0.06}px)`;
+  },{passive:true});
+})();
 
-        const heroMetrics = document.querySelector('.hero-metrics');
-        if (heroMetrics) metricsObserver.observe(heroMetrics);
+/* ═══ MESH ORB SINE MOTION ═══ */
+(function(){
+  const orbs=document.querySelectorAll('.mesh-orb');
+  let time=0;
+  function animateOrbs(){
+    time+=0.006;
+    orbs.forEach((orb,i)=>{
+      const speed=0.4+i*0.25;
+      const offset=i*2.1;
+      const x=Math.sin(time*speed+offset)*4;
+      const y=Math.sin(time*speed*0.7+offset+1)*3;
+      const s=1+Math.sin(time*speed*0.4+offset)*0.04;
+      orb.style.transform=`translate(${x}vw,${y}vh) scale(${s})`;
+    });
+    requestAnimationFrame(animateOrbs);
+  }
+  animateOrbs();
+})();
 
-        // ---- i18n Multi-language support ----
-        const translations = {
-          en: {
-            navProblem: 'Problem', navHow: 'How It Works', navFeatures: 'Features', navTech: 'Tech Stack', navLaunch: 'Launch App',
-            heroLine1: 'Stablecoins,', heroLine2: 'Institutional-Grade.',
-            heroDesc: 'The compliance and issuance layer that turns stablecoins into infrastructure institutions actually trust. Programmable rules. Real-time reserves. Zero compromise.',
-            heroBtn1: 'Start Building', heroBtn2: 'See How It Works',
-            metricCapital: 'Capital waiting on the sidelines', metricSettlement: 'Settlement finality on Solana', metricTransparency: 'On-chain reserve transparency',
-            problemTitle: "Institutions can't trust<br>today's stablecoin rails.",
-            howTitle: "Three steps. <span class=\"text-gradient\">That's it.</span>",
-            getStarted: 'Get Started',
-          },
-          de: {
-            navProblem: 'Problem', navHow: 'So funktioniert es', navFeatures: 'Funktionen', navTech: 'Technologie', navLaunch: 'App starten',
-            heroLine1: 'Stablecoins,', heroLine2: 'Institutioneller Standard.',
-            heroDesc: 'Die Compliance- und Ausgabeschicht, die Stablecoins in Infrastruktur verwandelt, der Institutionen wirklich vertrauen. Programmierbare Regeln. Echtzeit-Reserven. Keine Kompromisse.',
-            heroBtn1: 'Jetzt starten', heroBtn2: 'So funktioniert es',
-            metricCapital: 'Kapital wartet an der Seitenlinie', metricSettlement: 'Settlement-Finalit\u00e4t auf Solana', metricTransparency: 'On-Chain Reserve-Transparenz',
-            problemTitle: 'Institutionen k\u00f6nnen den heutigen<br>Stablecoin-Schienen nicht vertrauen.',
-            howTitle: 'Drei Schritte. <span class="text-gradient">Das war\'s.</span>',
-            getStarted: 'Loslegen',
-          },
-          fr: {
-            navProblem: 'Probl\u00e8me', navHow: 'Comment \u00e7a marche', navFeatures: 'Fonctionnalit\u00e9s', navTech: 'Stack Technique', navLaunch: 'Lancer l\'App',
-            heroLine1: 'Stablecoins,', heroLine2: 'Qualit\u00e9 Institutionnelle.',
-            heroDesc: 'La couche de conformit\u00e9 et d\'\u00e9mission qui transforme les stablecoins en infrastructure \u00e0 laquelle les institutions font confiance. R\u00e8gles programmables. R\u00e9serves en temps r\u00e9el. Z\u00e9ro compromis.',
-            heroBtn1: 'Commencer', heroBtn2: 'Comment \u00e7a marche',
-            metricCapital: 'Capital en attente', metricSettlement: 'Finalit\u00e9 de r\u00e8glement sur Solana', metricTransparency: 'Transparence des r\u00e9serves on-chain',
-            problemTitle: 'Les institutions ne peuvent pas faire confiance<br>aux rails stablecoin actuels.',
-            howTitle: 'Trois \u00e9tapes. <span class="text-gradient">C\'est tout.</span>',
-            getStarted: 'D\u00e9marrer',
-          }
-        };
+/* ═══ FLOATING PARALLAX ELEMENTS (3 depth layers) ═══ */
+(function(){
+  const floats=document.querySelectorAll('.float-el');
+  window.addEventListener('scroll',()=>{
+    const sy=window.scrollY;
+    floats.forEach((el,i)=>{
+      const speed=0.02+i*0.015;
+      const x=Math.sin(sy*0.002+i*2)*8;
+      el.style.transform=`translateY(${sy*speed}px) translateX(${x}px)`;
+    });
+  },{passive:true});
+})();
 
-        let currentLang = localStorage.getItem('solidus-lang') || 'en';
+/* ═══ MAGNETIC BUTTONS ═══ */
+(function(){
+  document.querySelectorAll('.magnetic').forEach(btn=>{
+    btn.addEventListener('mousemove',e=>{
+      const r=btn.getBoundingClientRect();
+      const x=e.clientX-r.left-r.width/2;
+      const y=e.clientY-r.top-r.height/2;
+      btn.style.transform=`translate(${x*.2}px,${y*.2}px)`;
+    });
+    btn.addEventListener('mouseleave',()=>{
+      btn.style.transform='';btn.style.transition='transform .4s cubic-bezier(0.34,1.56,0.64,1)';
+      setTimeout(()=>btn.style.transition='',400);
+    });
+  });
+})();
 
-        function applyTranslations(lang) {
-          currentLang = lang;
-          localStorage.setItem('solidus-lang', lang);
-          const t = translations[lang] || translations.en;
-          document.querySelectorAll('[data-i18n]').forEach(el => {
-            const key = el.getAttribute('data-i18n');
-            if (t[key] !== undefined) {
-              if (t[key].includes('<')) { el.innerHTML = t[key]; }
-              else { el.textContent = t[key]; }
-            }
-          });
-          const btn = document.getElementById('langBtn');
-          if (btn) btn.innerHTML = '\ud83c\udf10 ' + lang.toUpperCase();
-          document.querySelectorAll('.lang-option').forEach(opt => {
-            opt.classList.toggle('active', opt.dataset.lang === lang);
-          });
-        }
+/* ═══ TILT CARDS ═══ */
+(function(){
+  document.querySelectorAll('[data-tilt]').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const r=card.getBoundingClientRect();
+      const x=(e.clientX-r.left)/r.width-.5;
+      const y=(e.clientY-r.top)/r.height-.5;
+      card.style.transform=`perspective(800px) rotateY(${x*5}deg) rotateX(${-y*5}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave',()=>{
+      card.style.transform='';card.style.transition='transform .5s cubic-bezier(0.34,1.56,0.64,1)';
+      setTimeout(()=>card.style.transition='',500);
+    });
+  });
+})();
 
-        function toggleLangDropdown(e) {
-          if (e) e.preventDefault();
-          document.getElementById('langDropdown').classList.toggle('show');
-        }
+/* ═══ ANIMATED COUNTERS with spring easing ═══ */
+(function(){
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{
+      if(!e.isIntersecting)return;
+      const el=e.target;
+      const target=+el.dataset.target;
+      const prefix=el.dataset.prefix||'';
+      const suffix=el.dataset.suffix||'';
+      const dur=1800;const t0=performance.now();
+      (function tick(now){
+        const p=Math.min(1,(now-t0)/dur);
+        const ease=1-Math.pow(1-p,4)*(1-Math.sin(p*Math.PI*.5));
+        const val=Math.round(ease*target);
+        el.textContent=prefix+val+suffix;
+        if(p<1)requestAnimationFrame(tick);
+        else el.textContent=prefix+target+suffix;
+      })(t0);
+      obs.unobserve(el);
+    });
+  },{threshold:.5});
+  document.querySelectorAll('.stat-num[data-target]').forEach(el=>obs.observe(el));
+})();
 
-        function setLang(lang) {
-          applyTranslations(lang);
-          document.getElementById('langDropdown').classList.remove('show');
-        }
+/* ═══ SMOOTH SCROLL ═══ */
+(function(){
+  document.querySelectorAll('a[href^="#"]').forEach(a=>{
+    a.addEventListener('click',e=>{
+      e.preventDefault();
+      const target=document.querySelector(a.getAttribute('href'));
+      if(!target)return;
+      target.scrollIntoView({behavior:'smooth',block:'start'});
+      document.getElementById('navLinks').classList.remove('open');
+    });
+  });
+})();
 
-        document.addEventListener('click', (e) => {
-          if (!e.target.closest('.lang-selector')) {
-            const dd = document.getElementById('langDropdown');
-            if (dd) dd.classList.remove('show');
-          }
-        });
+/* ═══ LANGUAGE SYSTEM ═══ */
+function toggleLangDropdown(){
+  document.getElementById('lang-dropdown').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.lang-selector')){
+    const dd=document.getElementById('lang-dropdown');
+    if(dd)dd.classList.remove('open');
+  }
+});
 
-        applyTranslations(currentLang);
-    </script>
+const i18n={
+en:{
+  nav_problem:'Problem',nav_solution:'Solution',nav_how:'How It Works',nav_features:'Features',nav_security:'Security',nav_cta:'Request Demo',
+  hero_tag:'Built on Solana \u00b7 Token-2022',hero_w1:'The ',hero_w2:'Compliance Layer',hero_w3:'for Institutional ',hero_w4:'Stablecoins.',
+  hero_sub:'Programmable compliance, institutional-grade controls, and real-time reserve attestation. Built for banks and fintechs on Solana.',
+  hero_cta1:'Request Demo',hero_cta2:'View Documentation',
+  the_problem:'The Problem',problem_hl_gold:'$4T+ institutional capital',problem_hl_rest:'sitting on the sidelines.',
+  problem_desc:'Banks and financial institutions want to issue stablecoins but lack the compliance infrastructure to do it safely. Without programmable compliance, institutional adoption remains impossible.',
+  prob1_title:'No Compliance Layer',prob1_desc:'Existing stablecoin infrastructure lacks built-in KYC/AML controls required by regulators worldwide.',
+  prob2_title:'Fragmented Controls',prob2_desc:'Freeze, whitelist, and role management require custom smart contracts, increasing risk and cost.',
+  prob3_title:'Opaque Reserves',prob3_desc:'Institutions cannot verify reserve backing in real-time, creating trust gaps that prevent adoption.',
+  the_solution:'The Solution',solution_headline:'Three pillars of institutional trust.',
+  pillar1_title:'Programmable Compliance',pillar1_desc:'Embed KYC/AML rules directly into the token. Every transfer is automatically validated against your compliance framework before execution.',
+  pillar2_title:'Institutional Controls',pillar2_desc:'Freeze/unfreeze accounts, enforce whitelists, and manage roles with granular precision. Built-in authority separation for enterprise governance.',
+  pillar3_title:'Real-Time Reserves',pillar3_desc:'On-chain reserve attestation updated every block. Every token is backed 1:1 with cryptographic proof visible to all stakeholders.',
+  how_cap:'How It Works',how_hl:'operation',
+  step1_title:'Configure',step1_desc:'Define your compliance rules, whitelist requirements, and role-based access controls through our institutional dashboard.',
+  step2_title:'Issue',step2_desc:'Mint compliant stablecoins on Solana using Token-2022 extensions. Each token carries embedded compliance metadata.',
+  step3_title:'Operate',step3_desc:'Monitor reserves, manage compliance, and control token lifecycle in real-time. Full audit trail on every action.',
+  features_cap:'Features',features_hl:'institutional stablecoins',
+  f1_title:'Compliance Hooks',f1_desc:'Pre-transfer validation hooks that enforce KYC/AML checks on every transaction. Rules execute on-chain before any token movement.',
+  f2_title:'Freeze / Unfreeze',f2_desc:'Instantly freeze suspicious accounts or unfreeze cleared addresses. Regulatory compliance at the speed of blockchain.',
+  f3_title:'Whitelist Management',f3_desc:'Manage approved addresses with institutional-grade whitelist controls. Only verified entities can hold or transfer tokens.',
+  f4_title:'Reserve Proof',f4_desc:'Cryptographic attestation of reserves updated in real-time. Every token is provably backed 1:1 with fiat collateral, viewable on-chain by anyone.',
+  f5_title:'Role-Based Access',f5_desc:'Separate authorities for minting, freezing, and compliance. No single point of failure in institutional governance.',
+  f6_title:'Token-2022 Native',f6_desc:"Built on Solana's Token-2022 standard with transfer hooks, confidential transfers, and metadata extensions. Future-proof by design.",
+  security_cap:'Security',security_hl:'Secured by design.',
+  sec1_title:'Audited Smart Contracts',sec1_desc:'Multiple independent security audits by top-tier firms.',
+  sec2_title:'Multi-Sig Governance',sec2_desc:'Critical operations require multi-signature approval from authorized parties.',
+  sec3_title:'Regulatory Compliant',sec3_desc:'Designed to meet MiCA, Basel III, and global regulatory standards.',
+  sec4_title:'Real-Time Monitoring',sec4_desc:'24/7 automated surveillance with instant anomaly detection and alerting.',
+  stat1_label:'Addressable Market',stat2_label:'Settlement Time',stat3_label:'Reserve Backed',stat4_label:'Authority Roles',
+  cta_cap:'Get Started',cta_hl:'institutional stablecoins',cta_desc:'Join the institutions already building compliant stablecoin infrastructure on Solana. Request a demo or explore our documentation.',
+  cta_demo:'Request Demo',cta_docs:'View Documentation',
+  footer_privacy:'Privacy',footer_terms:'Terms',footer_contact:'Contact',footer_docs:'Docs'
+},
+es:{
+  nav_problem:'Problema',nav_solution:'Solucion',nav_how:'Funcionamiento',nav_features:'Funciones',nav_security:'Seguridad',nav_cta:'Solicitar Demo',
+  hero_tag:'Construido en Solana \u00b7 Token-2022',hero_w1:'La Capa de ',hero_w2:'Cumplimiento',hero_w3:'para Stablecoins ',hero_w4:'Institucionales.',
+  hero_sub:'Cumplimiento programable, controles de grado institucional y atestacion de reservas en tiempo real. Para bancos y fintechs en Solana.',
+  hero_cta1:'Solicitar Demo',hero_cta2:'Ver Documentacion',
+  the_problem:'El Problema',problem_hl_gold:'$4T+ de capital institucional',problem_hl_rest:'al margen.',
+  problem_desc:'Los bancos quieren emitir stablecoins pero carecen de la infraestructura de cumplimiento para hacerlo de forma segura.',
+  prob1_title:'Sin Capa de Cumplimiento',prob1_desc:'La infraestructura existente carece de controles KYC/AML requeridos por los reguladores.',
+  prob2_title:'Controles Fragmentados',prob2_desc:'Congelar, listas blancas y gestion de roles requieren contratos personalizados.',
+  prob3_title:'Reservas Opacas',prob3_desc:'Las instituciones no pueden verificar el respaldo de reservas en tiempo real.',
+  the_solution:'La Solucion',solution_headline:'Tres pilares de confianza institucional.',
+  pillar1_title:'Cumplimiento Programable',pillar1_desc:'Incorpora reglas KYC/AML directamente en el token. Cada transferencia se valida automaticamente.',
+  pillar2_title:'Controles Institucionales',pillar2_desc:'Congela/descongela cuentas, aplica listas blancas y gestiona roles con precision.',
+  pillar3_title:'Reservas en Tiempo Real',pillar3_desc:'Atestacion de reservas on-chain actualizada en cada bloque. Cada token respaldado 1:1.',
+  how_cap:'Funcionamiento',how_hl:'operacion',
+  step1_title:'Configurar',step1_desc:'Define tus reglas de cumplimiento y controles de acceso basados en roles.',
+  step2_title:'Emitir',step2_desc:'Acuna stablecoins compatibles en Solana usando extensiones Token-2022.',
+  step3_title:'Operar',step3_desc:'Monitorea reservas y controla el ciclo de vida del token en tiempo real.',
+  features_cap:'Funciones',features_hl:'stablecoins institucionales',
+  f1_title:'Hooks de Cumplimiento',f1_desc:'Hooks de validacion pre-transferencia que aplican verificaciones KYC/AML.',
+  f2_title:'Congelar / Descongelar',f2_desc:'Congela cuentas sospechosas o descongela direcciones verificadas al instante.',
+  f3_title:'Gestion de Listas Blancas',f3_desc:'Gestiona direcciones aprobadas con controles institucionales.',
+  f4_title:'Prueba de Reservas',f4_desc:'Certificacion criptografica de reservas actualizada en tiempo real.',
+  f5_title:'Acceso Basado en Roles',f5_desc:'Autoridades separadas para acunacion, congelacion y cumplimiento.',
+  f6_title:'Token-2022 Nativo',f6_desc:'Construido sobre el estandar Token-2022 de Solana con hooks y extensiones.',
+  security_cap:'Seguridad',security_hl:'Seguro por diseno.',
+  sec1_title:'Contratos Auditados',sec1_desc:'Multiples auditorias de seguridad independientes.',
+  sec2_title:'Gobernanza Multi-Sig',sec2_desc:'Las operaciones criticas requieren aprobacion multi-firma.',
+  sec3_title:'Cumplimiento Regulatorio',sec3_desc:'Disenado para MiCA, Basilea III y estandares globales.',
+  sec4_title:'Monitoreo en Tiempo Real',sec4_desc:'Vigilancia automatizada 24/7 con deteccion de anomalias.',
+  stat1_label:'Mercado Objetivo',stat2_label:'Liquidacion',stat3_label:'Respaldo',stat4_label:'Roles',
+  cta_cap:'Comenzar',cta_hl:'stablecoins institucionales',cta_desc:'Unete a las instituciones que construyen infraestructura de stablecoins en Solana.',
+  cta_demo:'Solicitar Demo',cta_docs:'Ver Documentacion',
+  footer_privacy:'Privacidad',footer_terms:'Terminos',footer_contact:'Contacto',footer_docs:'Docs'
+},
+de:{
+  nav_problem:'Problem',nav_solution:'Losung',nav_how:'Funktionsweise',nav_features:'Funktionen',nav_security:'Sicherheit',nav_cta:'Demo Anfordern',
+  hero_tag:'Auf Solana gebaut \u00b7 Token-2022',hero_w1:'Die ',hero_w2:'Compliance-Schicht',hero_w3:'fur institutionelle ',hero_w4:'Stablecoins.',
+  hero_sub:'Programmierbare Compliance, institutionelle Kontrollen und Echtzeit-Reservenachweis. Fur Banken und Fintechs auf Solana.',
+  hero_cta1:'Demo Anfordern',hero_cta2:'Dokumentation',
+  the_problem:'Das Problem',problem_hl_gold:'$4T+ institutionelles Kapital',problem_hl_rest:'wartet an der Seitenlinie.',
+  problem_desc:'Banken mochten Stablecoins ausgeben, aber es fehlt die Compliance-Infrastruktur fur eine sichere Umsetzung.',
+  prob1_title:'Keine Compliance-Schicht',prob1_desc:'Bestehende Infrastruktur fehlen eingebaute KYC/AML-Kontrollen.',
+  prob2_title:'Fragmentierte Kontrollen',prob2_desc:'Einfrieren und Rollenverwaltung erfordern benutzerdefinierte Smart Contracts.',
+  prob3_title:'Undurchsichtige Reserven',prob3_desc:'Institutionen konnen Reservendeckung nicht in Echtzeit verifizieren.',
+  the_solution:'Die Losung',solution_headline:'Drei Saulen institutionellen Vertrauens.',
+  pillar1_title:'Programmierbare Compliance',pillar1_desc:'KYC/AML-Regeln direkt im Token eingebettet. Jede Ubertragung wird automatisch validiert.',
+  pillar2_title:'Institutionelle Kontrollen',pillar2_desc:'Konten einfrieren/freigeben, Whitelists durchsetzen und Rollen verwalten.',
+  pillar3_title:'Echtzeit-Reserven',pillar3_desc:'On-Chain-Reservenachweis bei jedem Block aktualisiert. Jeder Token ist 1:1 kryptografisch gedeckt.',
+  how_cap:'Funktionsweise',how_hl:'Betrieb',
+  step1_title:'Konfigurieren',step1_desc:'Definieren Sie Compliance-Regeln und rollenbasierte Zugriffskontrollen.',
+  step2_title:'Ausgeben',step2_desc:'Pragen Sie konforme Stablecoins auf Solana mit Token-2022 Erweiterungen.',
+  step3_title:'Betreiben',step3_desc:'Uberwachen Sie Reserven und kontrollieren Sie den Token-Lebenszyklus in Echtzeit.',
+  features_cap:'Funktionen',features_hl:'institutionelle Stablecoins',
+  f1_title:'Compliance-Hooks',f1_desc:'Pre-Transfer-Validierungshooks die KYC/AML-Prufungen durchsetzen.',
+  f2_title:'Einfrieren / Freigeben',f2_desc:'Verdachtige Konten sofort einfrieren oder freigegebene Adressen entsperren.',
+  f3_title:'Whitelist-Verwaltung',f3_desc:'Genehmigte Adressen mit institutionellen Kontrollen verwalten.',
+  f4_title:'Reservennachweis',f4_desc:'Kryptografischer Nachweis der Reserven in Echtzeit.',
+  f5_title:'Rollenbasierter Zugang',f5_desc:'Getrennte Befugnisse fur Pragung, Einfrieren und Compliance.',
+  f6_title:'Token-2022 Nativ',f6_desc:'Gebaut auf Solanas Token-2022 Standard mit Transfer-Hooks und Erweiterungen.',
+  security_cap:'Sicherheit',security_hl:'Sicher durch Design.',
+  sec1_title:'Geprufte Smart Contracts',sec1_desc:'Mehrere unabhangige Sicherheitsprufungen.',
+  sec2_title:'Multi-Sig-Governance',sec2_desc:'Kritische Operationen erfordern Multi-Signatur-Genehmigung.',
+  sec3_title:'Regulatorisch Konform',sec3_desc:'Entwickelt fur MiCA, Basel III und globale Standards.',
+  sec4_title:'Echtzeit-Uberwachung',sec4_desc:'Automatisierte 24/7-Uberwachung mit Anomalieerkennung.',
+  stat1_label:'Adressierbarer Markt',stat2_label:'Abwicklungszeit',stat3_label:'Reservengedeckt',stat4_label:'Autoritatsrollen',
+  cta_cap:'Loslegen',cta_hl:'institutioneller Stablecoins',cta_desc:'Schliessen Sie sich Institutionen an die konforme Stablecoin-Infrastruktur auf Solana aufbauen.',
+  cta_demo:'Demo Anfordern',cta_docs:'Dokumentation',
+  footer_privacy:'Datenschutz',footer_terms:'AGB',footer_contact:'Kontakt',footer_docs:'Docs'
+},
+fr:{
+  nav_problem:'Probleme',nav_solution:'Solution',nav_how:'Fonctionnement',nav_features:'Fonctionnalites',nav_security:'Securite',nav_cta:'Demander Demo',
+  hero_tag:'Construit sur Solana \u00b7 Token-2022',hero_w1:'La Couche de ',hero_w2:'Conformite',hero_w3:'pour les Stablecoins ',hero_w4:'Institutionnels.',
+  hero_sub:'Conformite programmable, controles institutionnels et attestation de reserves en temps reel. Pour les banques et fintechs sur Solana.',
+  hero_cta1:'Demander Demo',hero_cta2:'Documentation',
+  the_problem:'Le Probleme',problem_hl_gold:'$4T+ de capital institutionnel',problem_hl_rest:'en attente.',
+  problem_desc:'Les banques veulent emettre des stablecoins mais manquent d\'infrastructure de conformite pour le faire en securite.',
+  prob1_title:'Pas de Couche de Conformite',prob1_desc:'L\'infrastructure existante manque de controles KYC/AML requis par les regulateurs.',
+  prob2_title:'Controles Fragmentes',prob2_desc:'Le gel et la gestion des roles necessitent des contrats personnalises.',
+  prob3_title:'Reserves Opaques',prob3_desc:'Les institutions ne peuvent pas verifier la couverture des reserves en temps reel.',
+  the_solution:'La Solution',solution_headline:'Trois piliers de confiance institutionnelle.',
+  pillar1_title:'Conformite Programmable',pillar1_desc:'Regles KYC/AML integrees directement dans le token. Chaque transfert est valide automatiquement.',
+  pillar2_title:'Controles Institutionnels',pillar2_desc:'Gelez/degelez des comptes, appliquez des listes blanches et gerez les roles avec precision.',
+  pillar3_title:'Reserves en Temps Reel',pillar3_desc:'Attestation de reserves on-chain mise a jour a chaque bloc. Chaque token est adosse 1:1.',
+  how_cap:'Fonctionnement',how_hl:'operation',
+  step1_title:'Configurer',step1_desc:'Definissez vos regles de conformite et controles d\'acces bases sur les roles.',
+  step2_title:'Emettre',step2_desc:'Frappez des stablecoins conformes sur Solana avec les extensions Token-2022.',
+  step3_title:'Operer',step3_desc:'Surveillez les reserves et controlez le cycle de vie des tokens en temps reel.',
+  features_cap:'Fonctionnalites',features_hl:'stablecoins institutionnels',
+  f1_title:'Hooks de Conformite',f1_desc:'Hooks de validation pre-transfert appliquant les verifications KYC/AML.',
+  f2_title:'Geler / Degeler',f2_desc:'Gelez instantanement les comptes suspects ou degelez les adresses verifiees.',
+  f3_title:'Gestion de Liste Blanche',f3_desc:'Gerez les adresses approuvees avec des controles institutionnels.',
+  f4_title:'Preuve de Reserves',f4_desc:'Attestation cryptographique des reserves mise a jour en temps reel.',
+  f5_title:'Acces par Roles',f5_desc:'Autorites separees pour la frappe, le gel et la conformite.',
+  f6_title:'Token-2022 Natif',f6_desc:'Construit sur le standard Token-2022 de Solana avec hooks de transfert et extensions.',
+  security_cap:'Securite',security_hl:'Securise par conception.',
+  sec1_title:'Contrats Audites',sec1_desc:'Plusieurs audits de securite independants.',
+  sec2_title:'Gouvernance Multi-Sig',sec2_desc:'Les operations critiques necessitent une approbation multi-signature.',
+  sec3_title:'Conformite Reglementaire',sec3_desc:'Concu pour MiCA, Bale III et les normes mondiales.',
+  sec4_title:'Surveillance Temps Reel',sec4_desc:'Surveillance automatisee 24/7 avec detection d\'anomalies.',
+  stat1_label:'Marche Adressable',stat2_label:'Reglement',stat3_label:'Reserve Garantie',stat4_label:'Roles',
+  cta_cap:'Commencer',cta_hl:'stablecoins institutionnels',cta_desc:'Rejoignez les institutions qui construisent une infrastructure stablecoin conforme sur Solana.',
+  cta_demo:'Demander Demo',cta_docs:'Documentation',
+  footer_privacy:'Confidentialite',footer_terms:'Conditions',footer_contact:'Contact',footer_docs:'Docs'
+}
+};
 
+let currentLang='en';
+function setLang(lang){
+  currentLang=lang;
+  const t=i18n[lang]||i18n.en;
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const key=el.dataset.i18n;
+    if(t[key])el.textContent=t[key];
+  });
+  // Rebuild hero words
+  document.querySelectorAll('[data-i18n-word]').forEach(el=>{
+    const key=el.dataset.i18nWord;
+    if(!t[key])return;
+    const text=t[key];
+    const classes=Array.from(el.classList).filter(c=>c!=='word');
+    el.innerHTML='';
+    for(let i=0;i<text.length;i++){
+      const span=document.createElement('span');
+      span.className='char';
+      classes.forEach(c=>span.classList.add(c));
+      span.textContent=text[i]===' '?'\u00A0':text[i];
+      span.style.opacity='1';span.style.transform='none';
+      el.appendChild(span);
+    }
+  });
+  const names={en:'EN',es:'ES',de:'DE',fr:'FR'};
+  const curr=document.getElementById('lang-current');
+  if(curr)curr.textContent=names[lang]||'EN';
+  document.querySelectorAll('.lang-option').forEach(opt=>{
+    opt.classList.toggle('active',opt.dataset.lang===lang);
+  });
+  document.getElementById('lang-dropdown').classList.remove('open');
+  document.documentElement.lang=lang;
+}
+</script>
 </body>
 </html>
