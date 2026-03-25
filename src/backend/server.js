@@ -54,11 +54,11 @@ const RPC_URL = process.env.SOLANA_RPC_URL || "https://api.devnet.solana.com";
 let PROGRAM_ID;
 try {
   PROGRAM_ID = new PublicKey(
-    process.env.PROGRAM_ID || "So1idusXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+    process.env.PROGRAM_ID || "11111111111111111111111111111111"
   );
 } catch (err) {
-  console.error("[config] FATAL: Invalid PROGRAM_ID:", process.env.PROGRAM_ID);
-  process.exit(1);
+  console.warn("[config] WARNING: Invalid PROGRAM_ID, using system program for demo");
+  PROGRAM_ID = new PublicKey("11111111111111111111111111111111");
 }
 
 const CORS_ORIGINS = process.env.CORS_ORIGINS
