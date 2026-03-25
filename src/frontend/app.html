@@ -1,0 +1,1438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Solidus | Institutional Stablecoin Infrastructure</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg-primary:#0a0f1c;--bg-secondary:#0d1424;--bg-card:#111827;--bg-card-hover:#151d30;
+  --border:#1e2a42;--border-light:#2a3a5c;
+  --text-primary:#e8ecf4;--text-secondary:#8899b4;--text-muted:#5a6a84;
+  --accent-blue:#1a6bff;--accent-blue-dim:#1a3a6b;--accent-gold:#d4a843;--accent-gold-dim:#8b6914;
+  --success:#10b981;--danger:#ef4444;--warning:#f59e0b;--info:#3b82f6;
+  --radius:12px;--radius-sm:8px;--radius-xs:6px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --glass:rgba(17,24,39,0.7);--glass-border:rgba(255,255,255,0.06);
+  --transition:all 0.2s ease;
+}
+html{font-size:14px}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-primary);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+/* ── Layout ── */
+.app{display:flex;min-height:100vh}
+.sidebar{width:240px;background:var(--bg-secondary);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100}
+.main{flex:1;margin-left:240px;min-height:100vh;display:flex;flex-direction:column}
+.topbar{height:56px;background:var(--bg-secondary);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50;backdrop-filter:blur(12px)}
+.content{flex:1;padding:28px;max-width:1400px;width:100%}
+
+/* ── Sidebar ── */
+.sidebar-logo{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.sidebar-logo .logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent-blue),var(--accent-gold));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:#fff}
+.sidebar-logo .logo-text{font-size:18px;font-weight:700;letter-spacing:-0.5px}
+.sidebar-logo .logo-sub{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px}
+.sidebar-nav{flex:1;padding:12px;display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 16px;border-radius:var(--radius-sm);cursor:pointer;transition:var(--transition);color:var(--text-secondary);font-weight:500;font-size:13px;border:1px solid transparent;user-select:none}
+.nav-item:hover{background:var(--bg-card);color:var(--text-primary)}
+.nav-item.active{background:rgba(26,107,255,0.12);color:var(--accent-blue);border-color:rgba(26,107,255,0.2)}
+.nav-item .nav-icon{font-size:18px;width:24px;text-align:center;flex-shrink:0}
+.sidebar-footer{padding:16px;border-top:1px solid var(--border)}
+.network-badge{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg-card);border-radius:var(--radius-xs);font-size:11px;color:var(--text-muted)}
+.network-dot{width:8px;height:8px;border-radius:50%;background:var(--success);box-shadow:0 0 8px var(--success)}
+
+/* ── Topbar ── */
+.topbar-title{font-weight:600;font-size:16px;letter-spacing:-0.3px}
+.topbar-right{display:flex;align-items:center;gap:16px}
+.status-pill{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px}
+.status-pill.live{background:rgba(16,185,129,0.12);color:var(--success)}
+.status-pill.paused{background:rgba(239,68,68,0.12);color:var(--danger)}
+.clock{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
+
+/* ── Cards ── */
+.card{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:24px;transition:var(--transition)}
+.card:hover{border-color:var(--border-light)}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.8px}
+.card-badge{font-size:10px;padding:3px 8px;border-radius:10px;font-weight:600}
+
+/* ── Grid ── */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.grid-1-2{display:grid;grid-template-columns:1fr 2fr;gap:20px}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+
+/* ── Metric widget ── */
+.metric{text-align:left}
+.metric .value{font-size:28px;font-weight:700;letter-spacing:-1px;line-height:1.2;margin-top:8px}
+.metric .value.gold{color:var(--accent-gold)}
+.metric .value.blue{color:var(--accent-blue)}
+.metric .value.green{color:var(--success)}
+.metric .trend{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;margin-top:6px;padding:2px 8px;border-radius:10px}
+.metric .trend.up{background:rgba(16,185,129,0.12);color:var(--success)}
+.metric .trend.down{background:rgba(239,68,68,0.12);color:var(--danger)}
+
+/* ── Reserve Gauge ── */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 0}
+.gauge{position:relative;width:140px;height:140px}
+.gauge svg{transform:rotate(-90deg)}
+.gauge-bg{fill:none;stroke:var(--border);stroke-width:10}
+.gauge-fill{fill:none;stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s ease,stroke 0.5s}
+.gauge-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center}
+.gauge-text .pct{font-size:28px;font-weight:700}
+.gauge-text .lbl{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-top:2px}
+
+/* ── Tables ── */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{text-align:left;font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.8px;padding:10px 14px;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;font-size:13px;border-bottom:1px solid rgba(30,42,66,0.4);white-space:nowrap}
+tr:hover td{background:rgba(26,107,255,0.03)}
+.mono{font-family:'JetBrains Mono',monospace;font-size:12px}
+.addr{max-width:120px;overflow:hidden;text-overflow:ellipsis}
+
+/* ── Status badges ── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600}
+.badge-success{background:rgba(16,185,129,0.12);color:var(--success)}
+.badge-danger{background:rgba(239,68,68,0.12);color:var(--danger)}
+.badge-warning{background:rgba(245,158,11,0.12);color:var(--warning)}
+.badge-info{background:rgba(59,130,246,0.12);color:var(--info)}
+
+/* ── Forms ── */
+.form-group{margin-bottom:18px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px}
+.form-input{width:100%;padding:11px 14px;background:var(--bg-primary);border:1px solid var(--border);border-radius:var(--radius-xs);color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-size:13px;transition:var(--transition);outline:none}
+.form-input:focus{border-color:var(--accent-blue);box-shadow:0 0 0 3px rgba(26,107,255,0.15)}
+.form-input::placeholder{color:var(--text-muted)}
+select.form-input{font-family:'Inter',sans-serif;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%235a6a84' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-serif}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;border-radius:var(--radius-xs);font-size:13px;font-weight:600;border:1px solid transparent;cursor:pointer;transition:var(--transition);font-family:'Inter',sans-serif}
+.btn:disabled{opacity:0.5;cursor:not-allowed}
+.btn-primary{background:var(--accent-blue);color:#fff}
+.btn-primary:hover:not(:disabled){background:#2a7bff;box-shadow:0 4px 16px rgba(26,107,255,0.3)}
+.btn-gold{background:var(--accent-gold);color:#0a0f1c}
+.btn-gold:hover:not(:disabled){background:#e0b54f}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-danger:hover:not(:disabled){background:#f55;box-shadow:0 4px 16px rgba(239,68,68,0.3)}
+.btn-ghost{background:transparent;border-color:var(--border);color:var(--text-secondary)}
+.btn-ghost:hover:not(:disabled){border-color:var(--accent-blue);color:var(--text-primary)}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-block{width:100%}
+
+/* ── Quick actions ── */
+.quick-actions{display:flex;gap:10px;margin-bottom:24px}
+.quick-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:14px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);font-weight:600;font-size:13px;cursor:pointer;transition:var(--transition)}
+.quick-btn:hover{border-color:var(--accent-blue);color:var(--text-primary);background:var(--bg-card-hover)}
+
+/* ── Activity Feed ── */
+.feed-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid rgba(30,42,66,0.3)}
+.feed-item:last-child{border-bottom:none}
+.feed-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.feed-icon.mint{background:rgba(16,185,129,0.12)}
+.feed-icon.burn{background:rgba(239,68,68,0.12)}
+.feed-icon.transfer{background:rgba(59,130,246,0.12)}
+.feed-icon.compliance{background:rgba(245,158,11,0.12)}
+.feed-icon.system{background:rgba(139,105,20,0.12)}
+.feed-body{flex:1;min-width:0}
+.feed-body .feed-title{font-size:13px;font-weight:500}
+.feed-body .feed-desc{font-size:12px;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feed-time{font-size:11px;color:var(--text-muted);font-family:'JetBrains Mono',monospace;white-space:nowrap}
+
+/* ── Chart (CSS bar) ── */
+.bar-chart{display:flex;align-items:flex-end;gap:4px;height:120px;padding-top:8px}
+.bar-chart .bar{flex:1;min-width:0;border-radius:3px 3px 0 0;transition:height 0.5s ease;position:relative}
+.bar-chart .bar.mint-bar{background:linear-gradient(to top,rgba(16,185,129,0.3),var(--success))}
+.bar-chart .bar.burn-bar{background:linear-gradient(to top,rgba(239,68,68,0.3),var(--danger))}
+.bar-chart .bar-label{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:9px;color:var(--text-muted);white-space:nowrap}
+
+/* ── Compliance cards ── */
+.compliance-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
+.compliance-stat{text-align:center;padding:16px;background:var(--bg-primary);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.compliance-stat .num{font-size:24px;font-weight:700;margin-bottom:4px}
+.compliance-stat .label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px}
+
+/* ── KYC Progress ── */
+.kyc-row{display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid rgba(30,42,66,0.3)}
+.kyc-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.kyc-bar .fill{height:100%;border-radius:3px;transition:width 0.6s ease}
+
+/* ── Tabs within panels ── */
+.tab-row{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.tab-btn{padding:10px 18px;font-size:13px;font-weight:500;color:var(--text-muted);cursor:pointer;border-bottom:2px solid transparent;transition:var(--transition);background:none;border-top:0;border-left:0;border-right:0;font-family:'Inter',sans-serif}
+.tab-btn.active{color:var(--accent-blue);border-bottom-color:var(--accent-blue)}
+.tab-btn:hover:not(.active){color:var(--text-secondary)}
+
+/* ── Toast notifications ── */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast{padding:14px 20px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;box-shadow:var(--shadow);animation:slideIn 0.3s ease;display:flex;align-items:center;gap:10px;min-width:300px}
+.toast-success{background:#065f46;border:1px solid var(--success);color:#a7f3d0}
+.toast-error{background:#7f1d1d;border:1px solid var(--danger);color:#fca5a5}
+.toast-info{background:#1e3a5f;border:1px solid var(--info);color:#93c5fd}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ── Section spacing ── */
+.section{margin-bottom:28px}
+.section-title{font-size:16px;font-weight:600;margin-bottom:16px;letter-spacing:-0.3px}
+
+/* ── Reserve proof ── */
+.hash-display{font-family:'JetBrains Mono',monospace;font-size:12px;background:var(--bg-primary);padding:12px;border-radius:var(--radius-xs);border:1px solid var(--border);word-break:break-all;line-height:1.6;color:var(--accent-gold)}
+
+/* ── Settings ── */
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid rgba(30,42,66,0.3)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-weight:500}
+.settings-desc{font-size:12px;color:var(--text-muted);margin-top:2px}
+.settings-value{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-secondary);max-width:300px;overflow:hidden;text-overflow:ellipsis;text-align:right}
+
+/* ── Empty state ── */
+.empty-state{text-align:center;padding:48px 20px;color:var(--text-muted)}
+.empty-state .empty-icon{font-size:40px;margin-bottom:12px}
+.empty-state .empty-text{font-size:14px}
+
+/* ── Result display ── */
+.result-box{margin-top:16px;padding:14px;border-radius:var(--radius-xs);font-size:13px;line-height:1.6;display:none}
+.result-box.show{display:block}
+.result-box.success{background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:var(--success)}
+.result-box.error{background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:var(--danger)}
+
+/* ── Audit log ── */
+.audit-entry{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid rgba(30,42,66,0.25);font-size:13px}
+.audit-entry .audit-time{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);min-width:80px}
+.audit-entry .audit-action{font-weight:500}
+
+/* ── Loading ── */
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,0.2);border-top-color:var(--accent-blue);border-radius:50%;animation:spin 0.6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Tab content visibility ── */
+.tab-content{display:none}.tab-content.active{display:block}
+
+/* ── Mobile bottom nav ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--bg-secondary);border-top:1px solid var(--border);z-index:100;padding:6px 0 env(safe-area-inset-bottom, 6px)}
+.mobile-nav-inner{display:flex;justify-content:space-around}
+.mobile-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:10px;color:var(--text-muted);cursor:pointer;transition:var(--transition);flex:1}
+.mobile-nav-item.active{color:var(--accent-blue)}
+.mobile-nav-item .nav-icon{font-size:20px}
+
+@media(max-width:900px){
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:1fr 1fr}
+  .grid-2-1,.grid-1-2{grid-template-columns:1fr}
+  .compliance-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{margin-left:0}
+  .mobile-nav{display:block}
+  .content{padding:16px;padding-bottom:80px}
+  .grid-4{grid-template-columns:1fr 1fr}
+  .grid-2{grid-template-columns:1fr}
+  .quick-actions{flex-wrap:wrap}
+  .topbar{padding:0 16px}
+}
+@media(max-width:480px){
+  .grid-4{grid-template-columns:1fr}
+  .compliance-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ═══════════ SIDEBAR ═══════════ -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">S</div>
+      <div>
+        <div class="logo-text">Solidus</div>
+        <div class="logo-sub">Stablecoin Infra</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <div class="nav-item active" data-tab="dashboard"><span class="nav-icon">&#127968;</span>Dashboard</div>
+      <div class="nav-item" data-tab="mint-burn"><span class="nav-icon">&#128176;</span>Mint &amp; Burn</div>
+      <div class="nav-item" data-tab="transfers"><span class="nav-icon">&#128260;</span>Transfers</div>
+      <div class="nav-item" data-tab="compliance"><span class="nav-icon">&#128737;&#65039;</span>Compliance</div>
+      <div class="nav-item" data-tab="reserves"><span class="nav-icon">&#128202;</span>Reserves</div>
+      <div class="nav-item" data-tab="settings"><span class="nav-icon">&#9881;&#65039;</span>Settings</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="network-badge">
+        <span class="network-dot" id="networkDot"></span>
+        <span id="networkLabel">Solana Devnet</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-right">
+        <div class="status-pill live" id="protocolStatus"><span class="network-dot" style="width:6px;height:6px"></span>LIVE</div>
+        <div class="clock" id="clock"></div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ════════ DASHBOARD ════════ -->
+      <div class="tab-content active" id="tab-dashboard">
+        <div class="quick-actions">
+          <div class="quick-btn" onclick="switchTab('mint-burn')">&#128176; Mint Tokens</div>
+          <div class="quick-btn" onclick="switchTab('mint-burn')">&#128293; Burn Tokens</div>
+          <div class="quick-btn" onclick="switchTab('transfers')">&#128260; Transfer</div>
+          <div class="quick-btn" onclick="switchTab('compliance')">&#128737;&#65039; Compliance</div>
+        </div>
+
+        <div class="grid-4 section">
+          <div class="card metric">
+            <div class="card-title">Total Supply</div>
+            <div class="value gold" id="totalSupply">--</div>
+            <div class="trend up" id="supplyTrend">&#9650; 2.4%</div>
+          </div>
+          <div class="card metric">
+            <div class="card-title">Reserve Ratio</div>
+            <div class="gauge-wrap">
+              <div class="gauge">
+                <svg viewBox="0 0 160 160" width="140" height="140">
+                  <circle cx="80" cy="80" r="65" class="gauge-bg"/>
+                  <circle cx="80" cy="80" r="65" class="gauge-fill" id="gaugeCircle"
+                    stroke="var(--success)" stroke-dasharray="408.4" stroke-dashoffset="40.8"/>
+                </svg>
+                <div class="gauge-text">
+                  <div class="pct" id="reservePct">102%</div>
+                  <div class="lbl">Collateral</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card metric">
+            <div class="card-title">Active Wallets</div>
+            <div class="value blue" id="activeWallets">--</div>
+            <div class="trend up">&#9650; 12</div>
+          </div>
+          <div class="card metric">
+            <div class="card-title">24h Volume</div>
+            <div class="value" id="volume24h">--</div>
+            <div class="trend up">&#9650; 8.1%</div>
+          </div>
+        </div>
+
+        <div class="grid-2-1 section">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Recent Activity</div>
+              <span class="badge badge-info">LIVE</span>
+            </div>
+            <div id="activityFeed">
+              <div class="empty-state"><div class="empty-icon">&#128203;</div><div class="empty-text">Loading activity...</div></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Compliance Overview</div>
+            </div>
+            <div class="compliance-grid">
+              <div class="compliance-stat">
+                <div class="num" style="color:var(--success)" id="whitelistedCount">0</div>
+                <div class="label">Whitelisted</div>
+              </div>
+              <div class="compliance-stat">
+                <div class="num" style="color:var(--danger)" id="frozenCount">0</div>
+                <div class="label">Frozen</div>
+              </div>
+              <div class="compliance-stat">
+                <div class="num" style="color:var(--warning)" id="pendingCount">0</div>
+                <div class="label">Pending KYC</div>
+              </div>
+            </div>
+            <div class="card-header" style="margin-top:8px"><div class="card-title">Protocol Health</div></div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span>RPC Latency</span><span class="mono" id="rpcLatency">--</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span>Current Slot</span><span class="mono" id="currentSlot">--</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px"><span>Config Initialized</span><span id="configInit">--</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ MINT & BURN ════════ -->
+      <div class="tab-content" id="tab-mint-burn">
+        <div class="tab-row">
+          <button class="tab-btn active" onclick="switchSubTab(this,'mint-panel')">Mint Tokens</button>
+          <button class="tab-btn" onclick="switchSubTab(this,'burn-panel')">Burn Tokens</button>
+          <button class="tab-btn" onclick="switchSubTab(this,'mb-history')">History</button>
+        </div>
+
+        <div class="grid-2 section">
+          <div id="mint-panel">
+            <div class="card">
+              <div class="card-header"><div class="card-title">&#128994; Mint Stablecoins</div></div>
+              <div class="form-group">
+                <label class="form-label">Issuer Wallet</label>
+                <input class="form-input" id="mintWallet" placeholder="Your wallet public key">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Recipient Address</label>
+                <input class="form-input" id="mintRecipient" placeholder="Recipient public key">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Amount (tokens)</label>
+                <input class="form-input" id="mintAmount" type="number" min="1" placeholder="1000000">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Memo (optional)</label>
+                <textarea class="form-input" id="mintMemo" placeholder="Institutional issuance memo..."></textarea>
+              </div>
+              <button class="btn btn-primary btn-block" onclick="executeMint()">&#128994; Mint Tokens</button>
+              <div class="result-box" id="mintResult"></div>
+            </div>
+          </div>
+
+          <div id="burn-panel" style="display:none">
+            <div class="card">
+              <div class="card-header"><div class="card-title">&#128308; Burn Stablecoins</div></div>
+              <div class="form-group">
+                <label class="form-label">Issuer Wallet</label>
+                <input class="form-input" id="burnWallet" placeholder="Your wallet public key">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Amount (tokens)</label>
+                <input class="form-input" id="burnAmount" type="number" min="1" placeholder="500000">
+              </div>
+              <button class="btn btn-danger btn-block" onclick="executeBurn()">&#128293; Burn Tokens</button>
+              <div class="result-box" id="burnResult"></div>
+            </div>
+          </div>
+
+          <div class="card" id="mb-supply-card">
+            <div class="card-header"><div class="card-title">Supply Over Time</div></div>
+            <div class="bar-chart" id="supplyChart"></div>
+            <div style="margin-top:28px">
+              <div class="card-title" style="margin-bottom:10px">Supply Stats</div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">
+                <span>Current Supply</span><span class="mono" id="mbCurrentSupply">--</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">
+                <span>Mint Cap</span><span class="mono" id="mbMintCap">--</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0">
+                <span>Utilization</span><span class="mono" id="mbUtil">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="mb-history" style="display:none">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Mint &amp; Burn History</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Time</th><th>Type</th><th>Amount</th><th>Address</th><th>Status</th></tr></thead>
+                <tbody id="mbHistoryBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ TRANSFERS ════════ -->
+      <div class="tab-content" id="tab-transfers">
+        <div class="grid-2 section">
+          <div class="card">
+            <div class="card-header"><div class="card-title">&#128260; Compliant Transfer</div></div>
+            <div class="form-group">
+              <label class="form-label">Sender Wallet</label>
+              <input class="form-input" id="txSender" placeholder="Sender public key">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Recipient Address</label>
+              <input class="form-input" id="txRecipient" placeholder="Recipient public key">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount</label>
+              <input class="form-input" id="txAmount" type="number" min="1" placeholder="100000">
+            </div>
+            <button class="btn btn-primary btn-block" onclick="executeTransfer()">&#128260; Execute Transfer</button>
+            <div class="result-box" id="transferResult"></div>
+
+            <div style="margin-top:20px;padding:16px;background:var(--bg-primary);border-radius:var(--radius-xs);border:1px solid var(--border)">
+              <div class="card-title" style="margin-bottom:8px">&#128737;&#65039; Compliance Pre-check</div>
+              <div id="compliancePrecheck" style="font-size:13px;color:var(--text-muted)">Enter addresses above to verify whitelist status</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Transfer Log</div></div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Time</th><th>From</th><th>To</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody id="transferLog"></tbody>
+              </table>
+            </div>
+            <div class="empty-state" id="transferEmpty"><div class="empty-icon">&#128260;</div><div class="empty-text">No transfers yet</div></div>
+          </div>
+        </div>
+
+        <div class="card section">
+          <div class="card-header"><div class="card-title">&#9888;&#65039; Compliance Demo: Rejected Transfer</div><span class="badge badge-danger">DEMO</span></div>
+          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">This demonstrates a transfer that gets <strong>REJECTED</strong> because the recipient is not whitelisted. This is the core compliance enforcement mechanism.</p>
+          <button class="btn btn-danger" onclick="demoRejectedTransfer()">&#9888;&#65039; Trigger Rejected Transfer Demo</button>
+          <div class="result-box" id="demoResult"></div>
+        </div>
+      </div>
+
+      <!-- ════════ COMPLIANCE ════════ -->
+      <div class="tab-content" id="tab-compliance">
+        <div class="compliance-grid section">
+          <div class="compliance-stat">
+            <div class="num" style="color:var(--success)" id="cWhitelisted">0</div>
+            <div class="label">Whitelisted</div>
+          </div>
+          <div class="compliance-stat">
+            <div class="num" style="color:var(--danger)" id="cFrozen">0</div>
+            <div class="label">Frozen</div>
+          </div>
+          <div class="compliance-stat">
+            <div class="num" style="color:var(--warning)" id="cPending">0</div>
+            <div class="label">Pending Review</div>
+          </div>
+        </div>
+
+        <div class="grid-2 section">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Whitelist Management</div></div>
+            <div class="form-group">
+              <label class="form-label">Authority Wallet</label>
+              <input class="form-input" id="wlAuthority" placeholder="Admin or Compliance Officer wallet">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Address</label>
+              <input class="form-input" id="wlTarget" placeholder="Address to whitelist/remove">
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="checkWhitelist()">&#128270; Check Status</button>
+              <button class="btn btn-ghost" onclick="addToWhitelist()">&#10003; Add</button>
+              <button class="btn btn-ghost" onclick="removeFromWhitelist()">&#10007; Remove</button>
+            </div>
+            <div class="result-box" id="wlResult"></div>
+
+            <div style="margin-top:20px">
+              <div class="card-title" style="margin-bottom:10px">Whitelisted Addresses</div>
+              <div id="whitelistTable"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Freeze / Unfreeze</div></div>
+            <div class="form-group">
+              <label class="form-label">Authority Wallet</label>
+              <input class="form-input" id="freezeAuthority" placeholder="Admin or Compliance Officer wallet">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Target Address</label>
+              <input class="form-input" id="freezeTarget" placeholder="Address to freeze/unfreeze">
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-danger" onclick="freezeAccount()">&#10060; Freeze</button>
+              <button class="btn btn-ghost" onclick="unfreezeAccount()">&#9989; Unfreeze</button>
+              <button class="btn btn-ghost" onclick="checkFreeze()">&#128270; Check</button>
+            </div>
+            <div class="result-box" id="freezeResult"></div>
+
+            <div style="margin-top:20px">
+              <div class="card-title" style="margin-bottom:10px">Frozen Accounts</div>
+              <div id="frozenTable"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2 section">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Role Management</div></div>
+            <div class="form-group">
+              <label class="form-label">Wallet Address</label>
+              <input class="form-input" id="roleAddress" placeholder="Address to check role">
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="checkRole()">&#128270; Check Role</button>
+            <div class="result-box" id="roleResult"></div>
+
+            <div style="margin-top:20px">
+              <div class="card-title" style="margin-bottom:10px">Role Directory</div>
+              <div id="roleDirectory"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">KYC Status Tracker</div></div>
+            <div id="kycTracker"></div>
+          </div>
+        </div>
+
+        <div class="card section">
+          <div class="card-header"><div class="card-title">Compliance Audit Log</div></div>
+          <div id="auditLog"></div>
+        </div>
+      </div>
+
+      <!-- ════════ RESERVES ════════ -->
+      <div class="tab-content" id="tab-reserves">
+        <div class="grid-2 section">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Reserve Proof Verification</div></div>
+            <div style="margin-bottom:16px">
+              <div class="form-label">Current Reserve Hash</div>
+              <div class="hash-display" id="reserveHash">Loading...</div>
+            </div>
+            <div style="display:flex;gap:20px;margin-bottom:16px">
+              <div>
+                <div class="form-label">Verification Timestamp</div>
+                <div class="mono" style="font-size:13px" id="reserveTimestamp">--</div>
+              </div>
+              <div>
+                <div class="form-label">Reserve Ratio</div>
+                <div class="mono" style="font-size:13px;color:var(--success)" id="reserveRatioText">--</div>
+              </div>
+            </div>
+            <button class="btn btn-gold btn-block" onclick="verifyReserve()">&#128737;&#65039; Verify Reserve Proof</button>
+            <div class="result-box" id="reserveResult"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Reserve Ratio Over Time</div></div>
+            <div class="bar-chart" id="reserveChart" style="height:160px"></div>
+            <div style="margin-top:28px">
+              <div class="card-title" style="margin-bottom:10px">Reserve Breakdown</div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)">
+                <span>Total Stablecoin Supply</span><span class="mono" id="rTotalSupply">--</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)">
+                <span>Reserve Backing (USD)</span><span class="mono" id="rBacking">--</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px solid var(--border)">
+                <span>Treasury Bills</span><span class="mono" id="rTBills">--</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;padding:8px 0">
+                <span>Cash Equivalents</span><span class="mono" id="rCash">--</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card section">
+          <div class="card-header"><div class="card-title">Reserve Verification History</div></div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Timestamp</th><th>Hash</th><th>Ratio</th><th>Verifier</th><th>Status</th></tr></thead>
+              <tbody id="reserveHistoryBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ════════ SETTINGS ════════ -->
+      <div class="tab-content" id="tab-settings">
+        <div class="card section">
+          <div class="card-header"><div class="card-title">Protocol Configuration</div></div>
+          <div class="settings-row">
+            <div><div class="settings-label">Program ID</div><div class="settings-desc">On-chain program address</div></div>
+            <div class="settings-value" id="sProgramId">--</div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Network</div><div class="settings-desc">Solana cluster endpoint</div></div>
+            <div class="settings-value" id="sNetwork">--</div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Admin</div><div class="settings-desc">Current protocol administrator</div></div>
+            <div class="settings-value" id="sAdmin">--</div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Pending Admin</div><div class="settings-desc">Two-step admin transfer target</div></div>
+            <div class="settings-value" id="sPendingAdmin">None</div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-label">Decimals</div><div class="settings-desc">Token decimal precision</div></div>
+            <div class="settings-value" id="sDecimals">--</div>
+          </div>
+        </div>
+
+        <div class="grid-2 section">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Admin Transfer (Two-Step)</div></div>
+            <p style="font-size:12px;color:var(--text-muted);margin-bottom:16px">Step 1: Current admin proposes new admin. Step 2: New admin accepts.</p>
+            <div class="form-group">
+              <label class="form-label">Current Admin Wallet</label>
+              <input class="form-input" id="adminCurrent" placeholder="Current admin public key">
+            </div>
+            <div class="form-group">
+              <label class="form-label">New Admin Address</label>
+              <input class="form-input" id="adminNew" placeholder="Proposed new admin public key">
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-primary" onclick="proposeAdmin()">Propose Transfer</button>
+              <button class="btn btn-gold" onclick="acceptAdmin()">Accept Admin</button>
+            </div>
+            <div class="result-box" id="adminResult"></div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><div class="card-title">Protocol Controls</div></div>
+            <div class="form-group">
+              <label class="form-label">Mint Cap</label>
+              <input class="form-input" id="mintCapInput" type="number" placeholder="Maximum token supply">
+            </div>
+            <button class="btn btn-ghost btn-block" style="margin-bottom:16px" onclick="setMintCap()">Update Mint Cap</button>
+
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-danger" onclick="pauseProtocol()" id="pauseBtn">&#9208;&#65039; Pause Protocol</button>
+              <button class="btn btn-primary" onclick="unpauseProtocol()" id="unpauseBtn">&#9654;&#65039; Unpause Protocol</button>
+            </div>
+            <div class="result-box" id="controlResult"></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ═══════════ MOBILE NAV ═══════════ -->
+<div class="mobile-nav">
+  <div class="mobile-nav-inner" id="mobileNav">
+    <div class="mobile-nav-item active" data-tab="dashboard"><span class="nav-icon">&#127968;</span>Home</div>
+    <div class="mobile-nav-item" data-tab="mint-burn"><span class="nav-icon">&#128176;</span>Mint</div>
+    <div class="mobile-nav-item" data-tab="transfers"><span class="nav-icon">&#128260;</span>Transfer</div>
+    <div class="mobile-nav-item" data-tab="compliance"><span class="nav-icon">&#128737;&#65039;</span>Comply</div>
+    <div class="mobile-nav-item" data-tab="reserves"><span class="nav-icon">&#128202;</span>Reserve</div>
+    <div class="mobile-nav-item" data-tab="settings"><span class="nav-icon">&#9881;&#65039;</span>Config</div>
+  </div>
+</div>
+
+<!-- ═══════════ TOAST CONTAINER ═══════════ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// Solidus Dashboard — Frontend Controller
+// ═══════════════════════════════════════════════════════════════════════════
+
+const API = 'http://localhost:3001';
+
+// ── State ──
+const state = {
+  status: null,
+  transactions: [],
+  whitelisted: [],
+  frozen: [],
+  auditLog: [],
+  reserveHistory: [],
+  supplyHistory: [],
+};
+
+// ── Helpers ──
+function $(id) { return document.getElementById(id); }
+function shortAddr(a) { return a ? a.slice(0,6) + '...' + a.slice(-4) : '--'; }
+function fmtNum(n) {
+  const num = Number(n);
+  if (isNaN(num)) return '--';
+  if (num >= 1e9) return (num/1e9).toFixed(2) + 'B';
+  if (num >= 1e6) return (num/1e6).toFixed(2) + 'M';
+  if (num >= 1e3) return (num/1e3).toFixed(1) + 'K';
+  return num.toLocaleString();
+}
+function fmtTime(d) {
+  const date = d instanceof Date ? d : new Date(d);
+  return date.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+function fmtDate(d) {
+  const date = d instanceof Date ? d : new Date(d);
+  return date.toLocaleDateString('en-US', { month:'short', day:'numeric' }) + ' ' + fmtTime(date);
+}
+
+// ── Toast ──
+function toast(msg, type = 'info') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  const icons = { success: '\u2705', error: '\u274C', info: '\u2139\uFE0F' };
+  el.innerHTML = `<span>${icons[type] || ''}</span><span>${msg}</span>`;
+  $('toastContainer').appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(100%)'; setTimeout(() => el.remove(), 300); }, 4000);
+}
+
+// ── API Fetch Wrapper ──
+async function api(path, opts = {}) {
+  try {
+    const res = await fetch(API + path, {
+      headers: { 'Content-Type': 'application/json' },
+      ...opts,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+    return data;
+  } catch (err) {
+    throw err;
+  }
+}
+
+// ── Navigation ──
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.mobile-nav-item').forEach(n => n.classList.remove('active'));
+
+  const tab = $('tab-' + tabName);
+  if (tab) tab.classList.add('active');
+
+  document.querySelectorAll(`.nav-item[data-tab="${tabName}"]`).forEach(n => n.classList.add('active'));
+  document.querySelectorAll(`.mobile-nav-item[data-tab="${tabName}"]`).forEach(n => n.classList.add('active'));
+
+  const titles = { dashboard:'Dashboard', 'mint-burn':'Mint & Burn', transfers:'Transfers', compliance:'Compliance', reserves:'Reserves', settings:'Settings' };
+  $('topbarTitle').textContent = titles[tabName] || tabName;
+}
+
+document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(item => {
+  item.addEventListener('click', () => switchTab(item.dataset.tab));
+});
+
+function switchSubTab(btn, panelId) {
+  const row = btn.parentElement;
+  row.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  // Show/hide panels
+  const panels = { 'mint-panel': $('mint-panel'), 'burn-panel': $('burn-panel'), 'mb-history': $('mb-history') };
+  const supplyCard = $('mb-supply-card');
+
+  if (panelId === 'mint-panel') {
+    panels['mint-panel'].style.display = '';
+    panels['burn-panel'].style.display = 'none';
+    panels['mb-history'].style.display = 'none';
+    supplyCard.style.display = '';
+  } else if (panelId === 'burn-panel') {
+    panels['mint-panel'].style.display = 'none';
+    panels['burn-panel'].style.display = '';
+    panels['mb-history'].style.display = 'none';
+    supplyCard.style.display = '';
+  } else {
+    panels['mint-panel'].style.display = 'none';
+    panels['burn-panel'].style.display = 'none';
+    panels['mb-history'].style.display = '';
+    supplyCard.style.display = 'none';
+  }
+}
+
+// ── Clock ──
+function updateClock() {
+  $('clock').textContent = new Date().toLocaleTimeString('en-US', { hour12: false });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Fetch status ──
+async function fetchStatus() {
+  try {
+    const start = Date.now();
+    const data = await api('/status');
+    const latency = Date.now() - start;
+    state.status = data;
+
+    // Dashboard metrics
+    const supply = data.totalSupply ? Number(data.totalSupply) : 0;
+    const decimals = data.decimals || 6;
+    const displaySupply = supply / Math.pow(10, decimals);
+    $('totalSupply').textContent = '$' + fmtNum(displaySupply);
+    $('mbCurrentSupply').textContent = fmtNum(displaySupply);
+
+    const mintCap = data.mintCap ? Number(data.mintCap) / Math.pow(10, decimals) : 0;
+    $('mbMintCap').textContent = mintCap > 0 ? fmtNum(mintCap) : 'Unlimited';
+    $('mbUtil').textContent = mintCap > 0 ? ((displaySupply / mintCap) * 100).toFixed(1) + '%' : 'N/A';
+
+    $('currentSlot').textContent = data.currentSlot ? data.currentSlot.toLocaleString() : '--';
+    $('configInit').innerHTML = data.configInitialized ? '<span class="badge badge-success">Yes</span>' : '<span class="badge badge-warning">No</span>';
+    $('rpcLatency').textContent = latency + 'ms';
+
+    // Protocol status
+    if (data.isPaused) {
+      $('protocolStatus').className = 'status-pill paused';
+      $('protocolStatus').innerHTML = '<span class="network-dot" style="width:6px;height:6px;background:var(--danger);box-shadow:0 0 8px var(--danger)"></span>PAUSED';
+    } else {
+      $('protocolStatus').className = 'status-pill live';
+      $('protocolStatus').innerHTML = '<span class="network-dot" style="width:6px;height:6px"></span>LIVE';
+    }
+
+    // Settings
+    $('sProgramId').textContent = data.programId || '--';
+    $('sNetwork').textContent = data.network || '--';
+    $('sAdmin').textContent = data.admin ? shortAddr(data.admin) : '--';
+    $('sPendingAdmin').textContent = data.pendingAdmin ? shortAddr(data.pendingAdmin) : 'None';
+    $('sDecimals').textContent = data.decimals !== undefined ? data.decimals : '--';
+
+    // Reserve
+    if (data.reserveVerifiedAt) {
+      $('reserveTimestamp').textContent = fmtDate(data.reserveVerifiedAt);
+    }
+
+  } catch (err) {
+    console.warn('Status fetch failed:', err.message);
+    $('networkDot').style.background = 'var(--danger)';
+    $('networkDot').style.boxShadow = '0 0 8px var(--danger)';
+  }
+}
+
+// ── Fetch demo data ──
+async function fetchDemoData() {
+  try {
+    const data = await api('/api/demo/state');
+
+    // Whitelist & frozen counts
+    state.whitelisted = data.whitelisted || [];
+    state.frozen = data.frozen || [];
+    state.transactions = data.transactions || [];
+    state.auditLog = data.auditLog || [];
+    state.reserveHistory = data.reserveHistory || [];
+    state.supplyHistory = data.supplyHistory || [];
+
+    const wlCount = state.whitelisted.length;
+    const frCount = state.frozen.length;
+    const pendCount = data.pendingKyc || 0;
+
+    $('whitelistedCount').textContent = wlCount;
+    $('frozenCount').textContent = frCount;
+    $('pendingCount').textContent = pendCount;
+    $('cWhitelisted').textContent = wlCount;
+    $('cFrozen').textContent = frCount;
+    $('cPending').textContent = pendCount;
+
+    $('activeWallets').textContent = wlCount;
+    $('volume24h').textContent = '$' + fmtNum(data.volume24h || 0);
+
+    // Reserve data
+    if (data.reserve) {
+      $('reserveHash').textContent = data.reserve.hash || 'Not available';
+      $('reservePct').textContent = data.reserve.ratio + '%';
+      $('reserveRatioText').textContent = data.reserve.ratio + '%';
+      $('rTotalSupply').textContent = '$' + fmtNum(data.reserve.totalSupply || 0);
+      $('rBacking').textContent = '$' + fmtNum(data.reserve.backing || 0);
+      $('rTBills').textContent = '$' + fmtNum(data.reserve.tBills || 0);
+      $('rCash').textContent = '$' + fmtNum(data.reserve.cash || 0);
+
+      // Gauge
+      const ratio = Math.min(data.reserve.ratio, 150);
+      const circumference = 408.4;
+      const offset = circumference - (ratio / 150) * circumference;
+      const gaugeColor = ratio >= 100 ? 'var(--success)' : ratio >= 90 ? 'var(--warning)' : 'var(--danger)';
+      $('gaugeCircle').style.strokeDashoffset = offset;
+      $('gaugeCircle').style.stroke = gaugeColor;
+      $('reservePct').style.color = gaugeColor;
+    }
+
+    renderActivityFeed();
+    renderWhitelistTable();
+    renderFrozenTable();
+    renderAuditLog();
+    renderKycTracker(data.kycEntries || []);
+    renderRoleDirectory(data.roles || []);
+    renderMbHistory();
+    renderSupplyChart();
+    renderReserveChart();
+    renderReserveHistory();
+    renderTransferLog();
+
+  } catch (err) {
+    console.warn('Demo data fetch failed:', err.message);
+  }
+}
+
+// ── Render helpers ──
+function renderActivityFeed() {
+  const feed = $('activityFeed');
+  if (!state.transactions.length) {
+    feed.innerHTML = '<div class="empty-state"><div class="empty-icon">&#128203;</div><div class="empty-text">No recent activity</div></div>';
+    return;
+  }
+  const recent = state.transactions.slice(-10).reverse();
+  feed.innerHTML = recent.map(tx => {
+    const iconClass = tx.type === 'mint' ? 'mint' : tx.type === 'burn' ? 'burn' : tx.type === 'transfer' ? 'transfer' : tx.type === 'compliance' ? 'compliance' : 'system';
+    const icons = { mint: '&#128994;', burn: '&#128308;', transfer: '&#128260;', compliance: '&#128737;&#65039;', system: '&#9881;&#65039;' };
+    const statusBadge = tx.status === 'confirmed' ? '<span class="badge badge-success">Confirmed</span>' : tx.status === 'rejected' ? '<span class="badge badge-danger">Rejected</span>' : '<span class="badge badge-warning">Pending</span>';
+    return `<div class="feed-item">
+      <div class="feed-icon ${iconClass}">${icons[tx.type] || icons.system}</div>
+      <div class="feed-body">
+        <div class="feed-title">${tx.description} ${statusBadge}</div>
+        <div class="feed-desc mono">${tx.address ? shortAddr(tx.address) : ''} ${tx.amount ? '| ' + fmtNum(tx.amount) + ' tokens' : ''}</div>
+      </div>
+      <div class="feed-time">${fmtTime(tx.time)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderWhitelistTable() {
+  const el = $('whitelistTable');
+  if (!state.whitelisted.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0">No whitelisted addresses</div>';
+    return;
+  }
+  el.innerHTML = state.whitelisted.map(addr => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="mono" style="font-size:12px">${shortAddr(addr)}</span>
+      <span class="badge badge-success">Active</span>
+    </div>
+  `).join('');
+}
+
+function renderFrozenTable() {
+  const el = $('frozenTable');
+  if (!state.frozen.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted);padding:8px 0">No frozen accounts</div>';
+    return;
+  }
+  el.innerHTML = state.frozen.map(addr => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="mono" style="font-size:12px">${shortAddr(addr)}</span>
+      <span class="badge badge-danger">Frozen</span>
+    </div>
+  `).join('');
+}
+
+function renderAuditLog() {
+  const el = $('auditLog');
+  if (!state.auditLog.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-text">No audit entries yet</div></div>';
+    return;
+  }
+  el.innerHTML = state.auditLog.slice().reverse().map(entry => `
+    <div class="audit-entry">
+      <div class="audit-time">${fmtTime(entry.time)}</div>
+      <div class="audit-action">${entry.action}</div>
+      <div style="flex:1;color:var(--text-muted);font-size:12px;text-align:right">${entry.detail || ''}</div>
+    </div>
+  `).join('');
+}
+
+function renderKycTracker(entries) {
+  const el = $('kycTracker');
+  if (!entries.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-text">No KYC entries</div></div>';
+    return;
+  }
+  el.innerHTML = entries.map(e => {
+    const color = e.status === 'approved' ? 'var(--success)' : e.status === 'pending' ? 'var(--warning)' : 'var(--danger)';
+    const pct = e.status === 'approved' ? 100 : e.status === 'pending' ? 60 : 20;
+    return `<div class="kyc-row">
+      <span class="mono" style="font-size:12px;min-width:90px">${shortAddr(e.address)}</span>
+      <div class="kyc-bar"><div class="fill" style="width:${pct}%;background:${color}"></div></div>
+      <span class="badge ${e.status === 'approved' ? 'badge-success' : e.status === 'pending' ? 'badge-warning' : 'badge-danger'}" style="min-width:70px;text-align:center">${e.status}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderRoleDirectory(roles) {
+  const el = $('roleDirectory');
+  if (!roles.length) {
+    el.innerHTML = '<div style="font-size:12px;color:var(--text-muted)">No roles assigned</div>';
+    return;
+  }
+  el.innerHTML = roles.map(r => {
+    const badgeClass = r.role === 'Admin' ? 'badge-gold' : r.role === 'Issuer' ? 'badge-info' : 'badge-warning';
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span class="mono" style="font-size:12px">${shortAddr(r.address)}</span>
+      <span class="badge ${badgeClass}" style="${r.role === 'Admin' ? 'background:rgba(212,168,67,0.15);color:var(--accent-gold)' : ''}">${r.role}</span>
+    </div>`;
+  }).join('');
+}
+
+function renderMbHistory() {
+  const el = $('mbHistoryBody');
+  const mbTx = state.transactions.filter(t => t.type === 'mint' || t.type === 'burn');
+  if (!mbTx.length) {
+    el.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No mint/burn transactions</td></tr>';
+    return;
+  }
+  el.innerHTML = mbTx.slice().reverse().map(tx => `
+    <tr>
+      <td class="mono">${fmtTime(tx.time)}</td>
+      <td><span class="badge ${tx.type === 'mint' ? 'badge-success' : 'badge-danger'}">${tx.type.toUpperCase()}</span></td>
+      <td class="mono">${fmtNum(tx.amount)}</td>
+      <td class="mono addr">${shortAddr(tx.address)}</td>
+      <td><span class="badge ${tx.status === 'confirmed' ? 'badge-success' : tx.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${tx.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderTransferLog() {
+  const el = $('transferLog');
+  const empty = $('transferEmpty');
+  const transfers = state.transactions.filter(t => t.type === 'transfer');
+  if (!transfers.length) {
+    el.innerHTML = '';
+    empty.style.display = '';
+    return;
+  }
+  empty.style.display = 'none';
+  el.innerHTML = transfers.slice().reverse().map(tx => `
+    <tr>
+      <td class="mono">${fmtTime(tx.time)}</td>
+      <td class="mono addr">${shortAddr(tx.from || tx.address)}</td>
+      <td class="mono addr">${shortAddr(tx.to || '--')}</td>
+      <td class="mono">${fmtNum(tx.amount)}</td>
+      <td><span class="badge ${tx.status === 'confirmed' ? 'badge-success' : tx.status === 'rejected' ? 'badge-danger' : 'badge-warning'}">${tx.status}</span></td>
+    </tr>
+  `).join('');
+}
+
+function renderSupplyChart() {
+  const chart = $('supplyChart');
+  const data = state.supplyHistory;
+  if (!data.length) {
+    chart.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:12px">No supply data</div>';
+    return;
+  }
+  const max = Math.max(...data.map(d => Math.max(d.minted || 0, d.burned || 0)), 1);
+  chart.innerHTML = data.map((d, i) => {
+    const mH = Math.max(((d.minted || 0) / max) * 100, 3);
+    const bH = Math.max(((d.burned || 0) / max) * 100, 3);
+    return `<div class="bar mint-bar" style="height:${mH}%"><div class="bar-label">${d.label || ''}</div></div>
+            <div class="bar burn-bar" style="height:${bH}%"></div>`;
+  }).join('');
+}
+
+function renderReserveChart() {
+  const chart = $('reserveChart');
+  const data = state.reserveHistory;
+  if (!data.length) {
+    chart.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--text-muted);font-size:12px">No reserve history</div>';
+    return;
+  }
+  const max = Math.max(...data.map(d => d.ratio || 0), 110);
+  chart.innerHTML = data.map(d => {
+    const h = Math.max(((d.ratio || 0) / max) * 100, 3);
+    const color = d.ratio >= 100 ? 'var(--success)' : d.ratio >= 90 ? 'var(--warning)' : 'var(--danger)';
+    return `<div class="bar" style="height:${h}%;background:linear-gradient(to top, ${color}33, ${color})"><div class="bar-label">${d.label || ''}</div></div>`;
+  }).join('');
+}
+
+function renderReserveHistory() {
+  const el = $('reserveHistoryBody');
+  const data = state.reserveHistory;
+  if (!data.length) {
+    el.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No verification history</td></tr>';
+    return;
+  }
+  el.innerHTML = data.slice().reverse().map(r => `
+    <tr>
+      <td class="mono">${fmtDate(r.time)}</td>
+      <td class="mono addr" title="${r.hash}">${r.hash ? r.hash.slice(0,16) + '...' : '--'}</td>
+      <td><span class="badge ${r.ratio >= 100 ? 'badge-success' : 'badge-danger'}">${r.ratio}%</span></td>
+      <td class="mono addr">${shortAddr(r.verifier)}</td>
+      <td><span class="badge badge-success">Verified</span></td>
+    </tr>
+  `).join('');
+}
+
+function showResult(elId, msg, isError) {
+  const el = $(elId);
+  el.className = `result-box show ${isError ? 'error' : 'success'}`;
+  el.textContent = msg;
+}
+
+// ── Actions ──
+async function executeMint() {
+  try {
+    const wallet = $('mintWallet').value.trim();
+    const recipient = $('mintRecipient').value.trim();
+    const amount = parseInt($('mintAmount').value);
+    if (!wallet || !recipient || !amount) { toast('Fill all required fields', 'error'); return; }
+
+    const data = await api('/api/tx/mint', { method: 'POST', body: { wallet, recipient, amount } });
+    showResult('mintResult', 'Transaction built: ' + data.message + '\nSign with your wallet to submit.', false);
+    toast('Mint transaction prepared', 'success');
+
+    addTransaction({ type: 'mint', description: 'Mint ' + fmtNum(amount) + ' tokens', amount, address: recipient, status: 'confirmed', time: new Date() });
+  } catch (err) {
+    showResult('mintResult', 'Error: ' + err.message, true);
+    toast('Mint failed: ' + err.message, 'error');
+  }
+}
+
+async function executeBurn() {
+  try {
+    const wallet = $('burnWallet').value.trim();
+    const amount = parseInt($('burnAmount').value);
+    if (!wallet || !amount) { toast('Fill all required fields', 'error'); return; }
+
+    const data = await api('/api/tx/burn', { method: 'POST', body: { wallet, amount } });
+    showResult('burnResult', 'Transaction built: ' + data.message + '\nSign with your wallet to submit.', false);
+    toast('Burn transaction prepared', 'success');
+
+    addTransaction({ type: 'burn', description: 'Burn ' + fmtNum(amount) + ' tokens', amount, address: wallet, status: 'confirmed', time: new Date() });
+  } catch (err) {
+    showResult('burnResult', 'Error: ' + err.message, true);
+    toast('Burn failed: ' + err.message, 'error');
+  }
+}
+
+async function executeTransfer() {
+  try {
+    const wallet = $('txSender').value.trim();
+    const recipient = $('txRecipient').value.trim();
+    const amount = parseInt($('txAmount').value);
+    if (!wallet || !recipient || !amount) { toast('Fill all required fields', 'error'); return; }
+
+    // Check whitelist first
+    try {
+      const wlCheck = await api(`/api/wallet/${recipient}/whitelist`);
+      if (!wlCheck.isWhitelisted) {
+        showResult('transferResult', 'REJECTED: Recipient ' + shortAddr(recipient) + ' is NOT whitelisted. Transfer blocked by compliance.', true);
+        $('compliancePrecheck').innerHTML = '<span class="badge badge-danger">REJECTED</span> Recipient is not whitelisted';
+        toast('Transfer rejected: recipient not whitelisted', 'error');
+        addTransaction({ type: 'transfer', description: 'Transfer REJECTED (not whitelisted)', amount, from: wallet, to: recipient, address: recipient, status: 'rejected', time: new Date() });
+        return;
+      }
+      $('compliancePrecheck').innerHTML = '<span class="badge badge-success">APPROVED</span> Both parties are whitelisted';
+    } catch (e) {
+      // Demo mode — continue
+    }
+
+    const data = await api('/api/tx/transfer', { method: 'POST', body: { wallet, recipient, amount } });
+    showResult('transferResult', 'Transaction built: ' + data.message, false);
+    toast('Transfer prepared', 'success');
+
+    addTransaction({ type: 'transfer', description: 'Transfer ' + fmtNum(amount) + ' tokens', amount, from: wallet, to: recipient, address: recipient, status: 'confirmed', time: new Date() });
+  } catch (err) {
+    showResult('transferResult', 'Error: ' + err.message, true);
+    toast('Transfer failed: ' + err.message, 'error');
+  }
+}
+
+async function demoRejectedTransfer() {
+  const sender = 'Demo7WhiteListed1111111111111111111111111';
+  const recipient = 'NotWhiteListed999999999999999999999999999';
+  const amount = 50000;
+
+  showResult('demoResult',
+    'COMPLIANCE REJECTION\n\n' +
+    'Sender: ' + shortAddr(sender) + ' (Whitelisted)\n' +
+    'Recipient: ' + shortAddr(recipient) + ' (NOT Whitelisted)\n' +
+    'Amount: ' + fmtNum(amount) + ' SUSD\n\n' +
+    'Status: BLOCKED by on-chain compliance check.\n' +
+    'The Solidus smart contract enforces that both sender and recipient must be whitelisted before any transfer can execute. ' +
+    'This is enforced at the protocol level, not application level — making it impossible to bypass.',
+    true
+  );
+
+  addTransaction({ type: 'transfer', description: 'Transfer REJECTED (compliance)', amount, from: sender, to: recipient, address: recipient, status: 'rejected', time: new Date() });
+
+  addAuditEntry('Transfer Blocked', 'Recipient ' + shortAddr(recipient) + ' not whitelisted. Amount: ' + fmtNum(amount));
+  toast('Demo: Transfer rejected by compliance', 'error');
+}
+
+async function checkWhitelist() {
+  try {
+    const addr = $('wlTarget').value.trim();
+    if (!addr) { toast('Enter an address', 'error'); return; }
+    const data = await api(`/api/wallet/${addr}/whitelist`);
+    showResult('wlResult', data.isWhitelisted ? 'Address IS whitelisted' : 'Address is NOT whitelisted', !data.isWhitelisted);
+  } catch (err) {
+    showResult('wlResult', 'Error: ' + err.message, true);
+  }
+}
+
+function addToWhitelist() {
+  const addr = $('wlTarget').value.trim();
+  if (!addr) { toast('Enter an address', 'error'); return; }
+  if (!state.whitelisted.includes(addr)) {
+    state.whitelisted.push(addr);
+  }
+  showResult('wlResult', 'Address added to whitelist (demo)', false);
+  addAuditEntry('Whitelist Add', shortAddr(addr) + ' added to whitelist');
+  toast('Address whitelisted', 'success');
+  renderWhitelistTable();
+  $('whitelistedCount').textContent = state.whitelisted.length;
+  $('cWhitelisted').textContent = state.whitelisted.length;
+}
+
+function removeFromWhitelist() {
+  const addr = $('wlTarget').value.trim();
+  if (!addr) { toast('Enter an address', 'error'); return; }
+  state.whitelisted = state.whitelisted.filter(a => a !== addr);
+  showResult('wlResult', 'Address removed from whitelist (demo)', false);
+  addAuditEntry('Whitelist Remove', shortAddr(addr) + ' removed from whitelist');
+  toast('Address removed', 'info');
+  renderWhitelistTable();
+  $('whitelistedCount').textContent = state.whitelisted.length;
+  $('cWhitelisted').textContent = state.whitelisted.length;
+}
+
+async function freezeAccount() {
+  try {
+    const wallet = $('freezeAuthority').value.trim();
+    const target = $('freezeTarget').value.trim();
+    if (!wallet || !target) { toast('Fill all fields', 'error'); return; }
+    const data = await api('/api/tx/freeze', { method: 'POST', body: { wallet, target } });
+    showResult('freezeResult', 'Freeze transaction built: ' + data.message, false);
+    if (!state.frozen.includes(target)) state.frozen.push(target);
+    addAuditEntry('Account Frozen', shortAddr(target) + ' frozen by ' + shortAddr(wallet));
+    toast('Account frozen', 'success');
+    renderFrozenTable();
+    $('frozenCount').textContent = state.frozen.length;
+    $('cFrozen').textContent = state.frozen.length;
+  } catch (err) {
+    showResult('freezeResult', 'Error: ' + err.message, true);
+    toast('Freeze failed: ' + err.message, 'error');
+  }
+}
+
+async function unfreezeAccount() {
+  try {
+    const wallet = $('freezeAuthority').value.trim();
+    const target = $('freezeTarget').value.trim();
+    if (!wallet || !target) { toast('Fill all fields', 'error'); return; }
+    const data = await api('/api/tx/unfreeze', { method: 'POST', body: { wallet, target } });
+    showResult('freezeResult', 'Unfreeze transaction built: ' + data.message, false);
+    state.frozen = state.frozen.filter(a => a !== target);
+    addAuditEntry('Account Unfrozen', shortAddr(target) + ' unfrozen by ' + shortAddr(wallet));
+    toast('Account unfrozen', 'success');
+    renderFrozenTable();
+    $('frozenCount').textContent = state.frozen.length;
+    $('cFrozen').textContent = state.frozen.length;
+  } catch (err) {
+    showResult('freezeResult', 'Error: ' + err.message, true);
+    toast('Unfreeze failed: ' + err.message, 'error');
+  }
+}
+
+async function checkFreeze() {
+  try {
+    const addr = $('freezeTarget').value.trim();
+    if (!addr) { toast('Enter an address', 'error'); return; }
+    const data = await api(`/api/wallet/${addr}/freeze`);
+    showResult('freezeResult', data.isFrozen ? 'Account IS frozen' : 'Account is NOT frozen', data.isFrozen);
+  } catch (err) {
+    showResult('freezeResult', 'Error: ' + err.message, true);
+  }
+}
+
+async function checkRole() {
+  try {
+    const addr = $('roleAddress').value.trim();
+    if (!addr) { toast('Enter an address', 'error'); return; }
+    const data = await api(`/api/wallet/${addr}/role`);
+    showResult('roleResult', data.role ? `Role: ${data.role} (Active: ${data.isActive})` : 'No role assigned', !data.role);
+  } catch (err) {
+    showResult('roleResult', 'Error: ' + err.message, true);
+  }
+}
+
+async function verifyReserve() {
+  try {
+    const data = await api('/api/demo/verify-reserve');
+    showResult('reserveResult', 'Reserve verification successful.\nRatio: ' + data.ratio + '%\nHash: ' + data.hash + '\nVerified at: ' + fmtDate(data.verifiedAt), false);
+    toast('Reserve verified', 'success');
+    addAuditEntry('Reserve Verified', 'Ratio: ' + data.ratio + '%');
+  } catch (err) {
+    showResult('reserveResult', 'Verification failed: ' + err.message, true);
+  }
+}
+
+function proposeAdmin() {
+  showResult('adminResult', 'Admin transfer proposal submitted. The new admin must call Accept Admin to complete the transfer.', false);
+  addAuditEntry('Admin Transfer Proposed', shortAddr($('adminNew').value || '--'));
+  toast('Admin transfer proposed', 'info');
+}
+
+function acceptAdmin() {
+  showResult('adminResult', 'Admin transfer acceptance submitted.', false);
+  addAuditEntry('Admin Transfer Accepted', 'New admin confirmed');
+  toast('Admin transfer accepted', 'success');
+}
+
+function setMintCap() {
+  const cap = $('mintCapInput').value;
+  if (!cap) { toast('Enter a mint cap value', 'error'); return; }
+  showResult('controlResult', 'Mint cap updated to ' + fmtNum(Number(cap)), false);
+  addAuditEntry('Mint Cap Updated', 'New cap: ' + fmtNum(Number(cap)));
+  toast('Mint cap updated', 'success');
+}
+
+function pauseProtocol() {
+  showResult('controlResult', 'Protocol PAUSED. All operations are suspended.', true);
+  addAuditEntry('Protocol Paused', 'All operations suspended');
+  toast('Protocol paused', 'error');
+}
+
+function unpauseProtocol() {
+  showResult('controlResult', 'Protocol RESUMED. Operations are active.', false);
+  addAuditEntry('Protocol Unpaused', 'Operations resumed');
+  toast('Protocol unpaused', 'success');
+}
+
+// ── State mutations ──
+function addTransaction(tx) {
+  state.transactions.push(tx);
+  renderActivityFeed();
+  renderMbHistory();
+  renderTransferLog();
+}
+
+function addAuditEntry(action, detail) {
+  state.auditLog.push({ action, detail, time: new Date() });
+  renderAuditLog();
+}
+
+// ── Compliance pre-check on input ──
+let precheckTimeout;
+['txSender','txRecipient'].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener('input', () => {
+    clearTimeout(precheckTimeout);
+    precheckTimeout = setTimeout(async () => {
+      const sender = $('txSender').value.trim();
+      const recipient = $('txRecipient').value.trim();
+      if (!sender || !recipient) return;
+      const precheck = $('compliancePrecheck');
+      precheck.innerHTML = '<span class="spinner"></span> Checking compliance...';
+      try {
+        const [sWl, rWl] = await Promise.all([
+          api(`/api/wallet/${sender}/whitelist`).catch(() => ({ isWhitelisted: false })),
+          api(`/api/wallet/${recipient}/whitelist`).catch(() => ({ isWhitelisted: false })),
+        ]);
+        const sOk = sWl.isWhitelisted;
+        const rOk = rWl.isWhitelisted;
+        if (sOk && rOk) {
+          precheck.innerHTML = '<span class="badge badge-success">APPROVED</span> Both parties are whitelisted';
+        } else {
+          let issues = [];
+          if (!sOk) issues.push('Sender not whitelisted');
+          if (!rOk) issues.push('Recipient not whitelisted');
+          precheck.innerHTML = `<span class="badge badge-danger">BLOCKED</span> ${issues.join(', ')}`;
+        }
+      } catch {
+        precheck.innerHTML = '<span class="badge badge-warning">UNKNOWN</span> Could not verify whitelist status';
+      }
+    }, 500);
+  });
+});
+
+// ── Initialize ──
+async function init() {
+  await fetchStatus();
+  await fetchDemoData();
+
+  // Poll status every 15s
+  setInterval(fetchStatus, 15000);
+  // Poll demo data every 30s
+  setInterval(fetchDemoData, 30000);
+}
+
+init();
+</script>
+</body>
+</html>

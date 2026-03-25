@@ -193,13 +193,12 @@ const app = express();
 // Security headers
 app.use(helmet());
 
-// CORS
+// CORS — allow all origins for demo
 app.use(
   cors({
-    origin: CORS_ORIGINS,
+    origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization", "X-Request-Id"],
-    credentials: true,
   })
 );
 
@@ -883,6 +882,109 @@ app.get("/api/pda/freeze/:address", (req, res) => {
   } catch {
     res.status(400).json({ error: "Invalid address" });
   }
+});
+
+// ---------------------------------------------------------------------------
+// Demo seed data — institutional-grade sample state for hackathon demo
+// ---------------------------------------------------------------------------
+
+const DEMO_SEED = {
+  whitelisted: [
+    "AMiNA1111111111111111111111111111111111111",
+    "UBSBank22222222222222222222222222222222222",
+    "Fireblocks333333333333333333333333333333333",
+    "Treasury44444444444444444444444444444444444",
+    "Custodian5555555555555555555555555555555555",
+  ],
+  frozen: [
+    "Suspicious77777777777777777777777777777777",
+  ],
+  roles: [
+    { address: "AdminMaster1111111111111111111111111111111", role: "Admin" },
+    { address: "AMiNA1111111111111111111111111111111111111", role: "Issuer" },
+    { address: "Fireblocks333333333333333333333333333333333", role: "ComplianceOfficer" },
+  ],
+  kycEntries: [
+    { address: "AMiNA1111111111111111111111111111111111111", status: "approved" },
+    { address: "UBSBank22222222222222222222222222222222222", status: "approved" },
+    { address: "Fireblocks333333333333333333333333333333333", status: "approved" },
+    { address: "Treasury44444444444444444444444444444444444", status: "approved" },
+    { address: "Custodian5555555555555555555555555555555555", status: "approved" },
+    { address: "NewClient66666666666666666666666666666666", status: "pending" },
+    { address: "Suspicious77777777777777777777777777777777", status: "rejected" },
+  ],
+  reserve: {
+    hash: "a3f8c2d1e5b94a67f0123456789abcdef0123456789abcdef0123456789abcdef",
+    ratio: 102,
+    totalSupply: 25000000,
+    backing: 25500000,
+    tBills: 18000000,
+    cash: 7500000,
+    verifiedAt: new Date().toISOString(),
+  },
+  transactions: [
+    { type: "system", description: "Protocol initialized", address: "AdminMaster1111111111111111111111111111111", status: "confirmed", time: new Date(Date.now() - 7200000).toISOString() },
+    { type: "compliance", description: "AMINA Bank whitelisted", address: "AMiNA1111111111111111111111111111111111111", status: "confirmed", time: new Date(Date.now() - 6600000).toISOString() },
+    { type: "compliance", description: "UBS whitelisted", address: "UBSBank22222222222222222222222222222222222", status: "confirmed", time: new Date(Date.now() - 6000000).toISOString() },
+    { type: "mint", description: "Mint 10,000,000 SUSD", amount: 10000000, address: "AMiNA1111111111111111111111111111111111111", status: "confirmed", time: new Date(Date.now() - 5400000).toISOString() },
+    { type: "mint", description: "Mint 15,000,000 SUSD", amount: 15000000, address: "UBSBank22222222222222222222222222222222222", status: "confirmed", time: new Date(Date.now() - 4800000).toISOString() },
+    { type: "transfer", description: "Transfer 2,000,000 SUSD", amount: 2000000, from: "AMiNA1111111111111111111111111111111111111", to: "Treasury44444444444444444444444444444444444", address: "Treasury44444444444444444444444444444444444", status: "confirmed", time: new Date(Date.now() - 3600000).toISOString() },
+    { type: "burn", description: "Burn 500,000 SUSD", amount: 500000, address: "AMiNA1111111111111111111111111111111111111", status: "confirmed", time: new Date(Date.now() - 2400000).toISOString() },
+    { type: "transfer", description: "Transfer REJECTED (not whitelisted)", amount: 1000000, from: "UBSBank22222222222222222222222222222222222", to: "UnknownAddr999999999999999999999999999999", address: "UnknownAddr999999999999999999999999999999", status: "rejected", time: new Date(Date.now() - 1800000).toISOString() },
+    { type: "compliance", description: "Account frozen: suspicious activity", address: "Suspicious77777777777777777777777777777777", status: "confirmed", time: new Date(Date.now() - 1200000).toISOString() },
+    { type: "mint", description: "Mint 500,000 SUSD", amount: 500000, address: "Fireblocks333333333333333333333333333333333", status: "confirmed", time: new Date(Date.now() - 600000).toISOString() },
+  ],
+  auditLog: [
+    { action: "Protocol Initialized", detail: "Admin: AdminM...1111", time: new Date(Date.now() - 7200000).toISOString() },
+    { action: "Whitelist Add", detail: "AMiNA...1111 added", time: new Date(Date.now() - 6600000).toISOString() },
+    { action: "Whitelist Add", detail: "UBSBa...2222 added", time: new Date(Date.now() - 6000000).toISOString() },
+    { action: "Mint Executed", detail: "10,000,000 SUSD to AMINA", time: new Date(Date.now() - 5400000).toISOString() },
+    { action: "Mint Executed", detail: "15,000,000 SUSD to UBS", time: new Date(Date.now() - 4800000).toISOString() },
+    { action: "Transfer Executed", detail: "2M SUSD AMINA -> Treasury", time: new Date(Date.now() - 3600000).toISOString() },
+    { action: "Transfer Blocked", detail: "Recipient not whitelisted", time: new Date(Date.now() - 1800000).toISOString() },
+    { action: "Account Frozen", detail: "Suspicious activity flagged", time: new Date(Date.now() - 1200000).toISOString() },
+    { action: "Reserve Verified", detail: "Ratio: 102%, Hash: a3f8c2...cdef", time: new Date(Date.now() - 600000).toISOString() },
+  ],
+  supplyHistory: [
+    { label: "Mar 18", minted: 5000000, burned: 0 },
+    { label: "Mar 19", minted: 8000000, burned: 200000 },
+    { label: "Mar 20", minted: 10000000, burned: 500000 },
+    { label: "Mar 21", minted: 12000000, burned: 1000000 },
+    { label: "Mar 22", minted: 15000000, burned: 500000 },
+    { label: "Mar 23", minted: 3000000, burned: 800000 },
+    { label: "Mar 24", minted: 500000, burned: 0 },
+  ],
+  reserveHistory: [
+    { label: "Mar 18", ratio: 105, hash: "b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2", verifier: "AdminMaster1111111111111111111111111111111", time: new Date(Date.now() - 518400000).toISOString() },
+    { label: "Mar 19", ratio: 104, hash: "c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3", verifier: "AdminMaster1111111111111111111111111111111", time: new Date(Date.now() - 432000000).toISOString() },
+    { label: "Mar 20", ratio: 103, hash: "d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4", verifier: "AdminMaster1111111111111111111111111111111", time: new Date(Date.now() - 345600000).toISOString() },
+    { label: "Mar 21", ratio: 101, hash: "e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5", verifier: "AdminMaster1111111111111111111111111111111", time: new Date(Date.now() - 259200000).toISOString() },
+    { label: "Mar 22", ratio: 102, hash: "f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6", verifier: "AdminMaster1111111111111111111111111111111", time: new Date(Date.now() - 172800000).toISOString() },
+    { label: "Mar 23", ratio: 103, hash: "a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7", verifier: "AdminMaster1111111111111111111111111111111", time: new Date(Date.now() - 86400000).toISOString() },
+    { label: "Mar 24", ratio: 102, hash: "a3f8c2d1e5b94a67f0123456789abcdef0123456789abcdef0123456789abcdef", verifier: "AdminMaster1111111111111111111111111111111", time: new Date().toISOString() },
+  ],
+  pendingKyc: 1,
+  volume24h: 4500000,
+};
+
+// ---------------------------------------------------------------------------
+// Demo endpoints — serve seed data and verification for frontend
+// ---------------------------------------------------------------------------
+
+app.get("/api/demo/state", (_req, res) => {
+  res.json(DEMO_SEED);
+});
+
+app.get("/api/demo/verify-reserve", (_req, res) => {
+  const reserve = DEMO_SEED.reserve;
+  res.json({
+    verified: true,
+    ratio: reserve.ratio,
+    hash: reserve.hash,
+    totalSupply: reserve.totalSupply,
+    backing: reserve.backing,
+    verifiedAt: new Date().toISOString(),
+  });
 });
 
 // ---------------------------------------------------------------------------
