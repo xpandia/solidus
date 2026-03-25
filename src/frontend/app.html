@@ -52,6 +52,16 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--bg-primary);color
 .status-pill.paused{background:rgba(239,68,68,0.12);color:var(--danger)}
 .clock{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted)}
 
+/* ── Language Selector ── */
+.lang-selector{position:relative}
+.lang-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);cursor:pointer;font-size:12px;color:var(--text-secondary);transition:var(--transition);font-family:'Inter',sans-serif}
+.lang-btn:hover{border-color:var(--accent-blue);color:var(--text-primary)}
+.lang-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-xs);box-shadow:var(--shadow);z-index:200;min-width:160px;display:none;overflow:hidden}
+.lang-dropdown.show{display:block}
+.lang-option{display:flex;align-items:center;gap:8px;padding:10px 14px;font-size:12px;cursor:pointer;color:var(--text-secondary);transition:var(--transition)}
+.lang-option:hover{background:var(--bg-card-hover);color:var(--text-primary)}
+.lang-option.active{color:var(--accent-blue);background:rgba(26,107,255,0.08)}
+
 /* ── Cards ── */
 .card{background:var(--glass);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:var(--radius);padding:24px;transition:var(--transition)}
 .card:hover{border-color:var(--border-light)}
@@ -251,16 +261,16 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
       <div class="logo-icon">S</div>
       <div>
         <div class="logo-text">Solidus</div>
-        <div class="logo-sub">Stablecoin Infra</div>
+        <div class="logo-sub" data-i18n="stablecoinInfra">Stablecoin Infra</div>
       </div>
     </div>
     <nav class="sidebar-nav" id="sidebarNav">
-      <div class="nav-item active" data-tab="dashboard"><span class="nav-icon">&#127968;</span>Dashboard</div>
-      <div class="nav-item" data-tab="mint-burn"><span class="nav-icon">&#128176;</span>Mint &amp; Burn</div>
-      <div class="nav-item" data-tab="transfers"><span class="nav-icon">&#128260;</span>Transfers</div>
-      <div class="nav-item" data-tab="compliance"><span class="nav-icon">&#128737;&#65039;</span>Compliance</div>
-      <div class="nav-item" data-tab="reserves"><span class="nav-icon">&#128202;</span>Reserves</div>
-      <div class="nav-item" data-tab="settings"><span class="nav-icon">&#9881;&#65039;</span>Settings</div>
+      <div class="nav-item active" data-tab="dashboard"><span class="nav-icon">&#127968;</span><span data-i18n="navDashboard">Dashboard</span></div>
+      <div class="nav-item" data-tab="mint-burn"><span class="nav-icon">&#128176;</span><span data-i18n="navMintBurn">Mint &amp; Burn</span></div>
+      <div class="nav-item" data-tab="transfers"><span class="nav-icon">&#128260;</span><span data-i18n="navTransfers">Transfers</span></div>
+      <div class="nav-item" data-tab="compliance"><span class="nav-icon">&#128737;&#65039;</span><span data-i18n="navCompliance">Compliance</span></div>
+      <div class="nav-item" data-tab="reserves"><span class="nav-icon">&#128202;</span><span data-i18n="navReserves">Reserves</span></div>
+      <div class="nav-item" data-tab="settings"><span class="nav-icon">&#9881;&#65039;</span><span data-i18n="navSettings">Settings</span></div>
     </nav>
     <div class="sidebar-footer">
       <div class="network-badge">
@@ -277,6 +287,14 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
       <div class="topbar-right">
         <div class="status-pill live" id="protocolStatus"><span class="network-dot" style="width:6px;height:6px"></span>LIVE</div>
         <div class="clock" id="clock"></div>
+        <div class="lang-selector">
+          <button class="lang-btn" id="langBtn" onclick="toggleLangDropdown()">&#127760; EN</button>
+          <div class="lang-dropdown" id="langDropdown">
+            <div class="lang-option active" data-lang="en" onclick="setLang('en')">&#127468;&#127463; English</div>
+            <div class="lang-option" data-lang="de" onclick="setLang('de')">&#127465;&#127466; Deutsch</div>
+            <div class="lang-option" data-lang="fr" onclick="setLang('fr')">&#127467;&#127479; Fran&ccedil;ais</div>
+          </div>
+        </div>
       </div>
     </header>
 
@@ -285,20 +303,20 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
       <!-- ════════ DASHBOARD ════════ -->
       <div class="tab-content active" id="tab-dashboard">
         <div class="quick-actions">
-          <div class="quick-btn" onclick="switchTab('mint-burn')">&#128176; Mint Tokens</div>
-          <div class="quick-btn" onclick="switchTab('mint-burn')">&#128293; Burn Tokens</div>
-          <div class="quick-btn" onclick="switchTab('transfers')">&#128260; Transfer</div>
-          <div class="quick-btn" onclick="switchTab('compliance')">&#128737;&#65039; Compliance</div>
+          <div class="quick-btn" onclick="switchTab('mint-burn')">&#128176; <span data-i18n="mintTokens">Mint Tokens</span></div>
+          <div class="quick-btn" onclick="switchTab('mint-burn')">&#128293; <span data-i18n="burnTokens">Burn Tokens</span></div>
+          <div class="quick-btn" onclick="switchTab('transfers')">&#128260; <span data-i18n="navTransfers">Transfer</span></div>
+          <div class="quick-btn" onclick="switchTab('compliance')">&#128737;&#65039; <span data-i18n="navCompliance">Compliance</span></div>
         </div>
 
         <div class="grid-4 section">
           <div class="card metric">
-            <div class="card-title">Total Supply</div>
+            <div class="card-title" data-i18n="totalSupply">Total Supply</div>
             <div class="value gold" id="totalSupply">--</div>
             <div class="trend up" id="supplyTrend">&#9650; 2.4%</div>
           </div>
           <div class="card metric">
-            <div class="card-title">Reserve Ratio</div>
+            <div class="card-title" data-i18n="reserveRatio">Reserve Ratio</div>
             <div class="gauge-wrap">
               <div class="gauge">
                 <svg viewBox="0 0 160 160" width="140" height="140">
@@ -308,18 +326,18 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
                 </svg>
                 <div class="gauge-text">
                   <div class="pct" id="reservePct">102%</div>
-                  <div class="lbl">Collateral</div>
+                  <div class="lbl" data-i18n="collateral">Collateral</div>
                 </div>
               </div>
             </div>
           </div>
           <div class="card metric">
-            <div class="card-title">Active Wallets</div>
+            <div class="card-title" data-i18n="activeWallets">Active Wallets</div>
             <div class="value blue" id="activeWallets">--</div>
             <div class="trend up">&#9650; 12</div>
           </div>
           <div class="card metric">
-            <div class="card-title">24h Volume</div>
+            <div class="card-title" data-i18n="volume24h">24h Volume</div>
             <div class="value" id="volume24h">--</div>
             <div class="trend up">&#9650; 8.1%</div>
           </div>
@@ -328,7 +346,7 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
         <div class="grid-2-1 section">
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Recent Activity</div>
+              <div class="card-title" data-i18n="recentActivity">Recent Activity</div>
               <span class="badge badge-info">LIVE</span>
             </div>
             <div id="activityFeed">
@@ -337,7 +355,7 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
           </div>
           <div class="card">
             <div class="card-header">
-              <div class="card-title">Compliance Overview</div>
+              <div class="card-title" data-i18n="complianceOverview">Compliance Overview</div>
             </div>
             <div class="compliance-grid">
               <div class="compliance-stat">
@@ -706,12 +724,12 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
 <!-- ═══════════ MOBILE NAV ═══════════ -->
 <div class="mobile-nav">
   <div class="mobile-nav-inner" id="mobileNav">
-    <div class="mobile-nav-item active" data-tab="dashboard"><span class="nav-icon">&#127968;</span>Home</div>
-    <div class="mobile-nav-item" data-tab="mint-burn"><span class="nav-icon">&#128176;</span>Mint</div>
-    <div class="mobile-nav-item" data-tab="transfers"><span class="nav-icon">&#128260;</span>Transfer</div>
-    <div class="mobile-nav-item" data-tab="compliance"><span class="nav-icon">&#128737;&#65039;</span>Comply</div>
-    <div class="mobile-nav-item" data-tab="reserves"><span class="nav-icon">&#128202;</span>Reserve</div>
-    <div class="mobile-nav-item" data-tab="settings"><span class="nav-icon">&#9881;&#65039;</span>Config</div>
+    <div class="mobile-nav-item active" data-tab="dashboard"><span class="nav-icon">&#127968;</span><span data-i18n="mobileHome">Home</span></div>
+    <div class="mobile-nav-item" data-tab="mint-burn"><span class="nav-icon">&#128176;</span><span data-i18n="mobileMint">Mint</span></div>
+    <div class="mobile-nav-item" data-tab="transfers"><span class="nav-icon">&#128260;</span><span data-i18n="mobileTransfer">Transfer</span></div>
+    <div class="mobile-nav-item" data-tab="compliance"><span class="nav-icon">&#128737;&#65039;</span><span data-i18n="mobileComply">Comply</span></div>
+    <div class="mobile-nav-item" data-tab="reserves"><span class="nav-icon">&#128202;</span><span data-i18n="mobileReserve">Reserve</span></div>
+    <div class="mobile-nav-item" data-tab="settings"><span class="nav-icon">&#9881;&#65039;</span><span data-i18n="mobileConfig">Config</span></div>
   </div>
 </div>
 
@@ -724,6 +742,75 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
 // ═══════════════════════════════════════════════════════════════════════════
 
 const API = 'http://localhost:3001';
+
+// ═══════════════════════════════════════════════════════════════════════════
+// i18n — Multi-language support (English / Deutsch / Francais)
+// ═══════════════════════════════════════════════════════════════════════════
+const translations = {
+  en: {
+    stablecoinInfra: 'Stablecoin Infra', navDashboard: 'Dashboard', navMintBurn: 'Mint & Burn',
+    navTransfers: 'Transfers', navCompliance: 'Compliance', navReserves: 'Reserves', navSettings: 'Settings',
+    mintTokens: 'Mint Tokens', burnTokens: 'Burn Tokens', totalSupply: 'Total Supply',
+    reserveRatio: 'Reserve Ratio', collateral: 'Collateral', activeWallets: 'Active Wallets',
+    volume24h: '24h Volume', recentActivity: 'Recent Activity', complianceOverview: 'Compliance Overview',
+    mobileHome: 'Home', mobileMint: 'Mint', mobileTransfer: 'Transfer', mobileComply: 'Comply',
+    mobileReserve: 'Reserve', mobileConfig: 'Config',
+  },
+  de: {
+    stablecoinInfra: 'Stablecoin-Infrastruktur', navDashboard: 'Dashboard', navMintBurn: 'Pr\u00e4gen & Verbrennen',
+    navTransfers: '\u00dcberweisungen', navCompliance: 'Compliance', navReserves: 'Reserven', navSettings: 'Einstellungen',
+    mintTokens: 'Token pr\u00e4gen', burnTokens: 'Token verbrennen', totalSupply: 'Gesamtangebot',
+    reserveRatio: 'Reservequote', collateral: 'Sicherheiten', activeWallets: 'Aktive Wallets',
+    volume24h: '24h Volumen', recentActivity: 'Letzte Aktivit\u00e4t', complianceOverview: 'Compliance-\u00dcbersicht',
+    mobileHome: 'Start', mobileMint: 'Pr\u00e4gen', mobileTransfer: '\u00dcberweisung', mobileComply: 'Compliance',
+    mobileReserve: 'Reserve', mobileConfig: 'Konfig',
+  },
+  fr: {
+    stablecoinInfra: 'Infra Stablecoin', navDashboard: 'Tableau de bord', navMintBurn: 'Cr\u00e9ation & Destruction',
+    navTransfers: 'Transferts', navCompliance: 'Conformit\u00e9', navReserves: 'R\u00e9serves', navSettings: 'Param\u00e8tres',
+    mintTokens: 'Cr\u00e9er des Tokens', burnTokens: 'D\u00e9truire des Tokens', totalSupply: 'Offre Totale',
+    reserveRatio: 'Ratio de R\u00e9serve', collateral: 'Garantie', activeWallets: 'Portefeuilles Actifs',
+    volume24h: 'Volume 24h', recentActivity: 'Activit\u00e9 R\u00e9cente', complianceOverview: 'Aper\u00e7u Conformit\u00e9',
+    mobileHome: 'Accueil', mobileMint: 'Cr\u00e9er', mobileTransfer: 'Transfert', mobileComply: 'Conformit\u00e9',
+    mobileReserve: 'R\u00e9serve', mobileConfig: 'Config',
+  }
+};
+
+let currentLang = localStorage.getItem('solidus-lang') || 'en';
+
+function applyTranslations(lang) {
+  currentLang = lang;
+  localStorage.setItem('solidus-lang', lang);
+  const t = translations[lang] || translations.en;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (t[key]) el.textContent = t[key];
+  });
+  const btn = document.getElementById('langBtn');
+  const flags = { en: '\ud83c\uddec\ud83c\udde7', de: '\ud83c\udde9\ud83c\uddea', fr: '\ud83c\uddeb\ud83c\uddf7' };
+  btn.innerHTML = '\ud83c\udf10 ' + lang.toUpperCase();
+  document.querySelectorAll('.lang-option').forEach(opt => {
+    opt.classList.toggle('active', opt.dataset.lang === lang);
+  });
+}
+
+function toggleLangDropdown() {
+  document.getElementById('langDropdown').classList.toggle('show');
+}
+
+function setLang(lang) {
+  applyTranslations(lang);
+  document.getElementById('langDropdown').classList.remove('show');
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.lang-selector')) {
+    document.getElementById('langDropdown').classList.remove('show');
+  }
+});
+
+// Apply saved language on load
+document.addEventListener('DOMContentLoaded', () => applyTranslations(currentLang));
 
 // ── State ──
 const state = {
