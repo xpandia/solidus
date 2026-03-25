@@ -250,6 +250,86 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
   .grid-4{grid-template-columns:1fr}
   .compliance-grid{grid-template-columns:1fr}
 }
+
+/* ── Transfer Pipeline Visualization ── */
+.pipeline{display:flex;align-items:center;justify-content:center;gap:0;margin:24px 0;padding:20px;background:var(--bg-primary);border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;position:relative}
+.pipeline-node{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 18px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--bg-card);min-width:120px;transition:all 0.5s ease;position:relative;z-index:1}
+.pipeline-node .node-icon{font-size:28px}
+.pipeline-node .node-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-secondary)}
+.pipeline-node .node-addr{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text-muted);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pipeline-arrow{width:60px;height:3px;background:var(--border);position:relative;transition:background 0.5s ease;flex-shrink:0}
+.pipeline-arrow::after{content:'';position:absolute;right:-1px;top:-5px;border:6px solid transparent;border-left-color:var(--border);transition:border-left-color 0.5s ease}
+.pipeline-node.compliance-node{border-color:var(--accent-blue);background:rgba(26,107,255,0.08)}
+.pipeline-node.compliance-node .node-label{color:var(--accent-blue)}
+
+/* Pipeline scanning animation */
+@keyframes scanPulse{0%{box-shadow:0 0 0 0 rgba(26,107,255,0.4)}50%{box-shadow:0 0 20px 8px rgba(26,107,255,0.2)}100%{box-shadow:0 0 0 0 rgba(26,107,255,0.4)}}
+@keyframes scanLine{0%{top:0;opacity:1}100%{top:100%;opacity:0}}
+.pipeline-node.scanning{animation:scanPulse 0.8s ease infinite;border-color:var(--accent-blue)}
+.pipeline-node.scanning::before{content:'';position:absolute;left:4px;right:4px;height:2px;background:linear-gradient(90deg,transparent,var(--accent-blue),transparent);top:0;animation:scanLine 0.8s ease infinite;border-radius:1px}
+.scanning-dots::after{content:'';animation:dots 1.5s steps(4) infinite}
+@keyframes dots{0%{content:''}25%{content:'.'}50%{content:'..'}75%{content:'...'}}
+
+/* Pipeline approved state */
+.pipeline.approved .pipeline-node{border-color:var(--success);background:rgba(16,185,129,0.08)}
+.pipeline.approved .pipeline-arrow{background:var(--success)}
+.pipeline.approved .pipeline-arrow::after{border-left-color:var(--success)}
+.pipeline.approved .node-label{color:var(--success)}
+
+/* Pipeline rejected state */
+.pipeline.rejected .pipeline-node{border-color:var(--danger);background:rgba(239,68,68,0.08)}
+.pipeline.rejected .pipeline-arrow{background:var(--danger)}
+.pipeline.rejected .pipeline-arrow::after{border-left-color:var(--danger)}
+.pipeline.rejected .node-label{color:var(--danger)}
+
+/* Shake animation */
+@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-6px)}20%,40%,60%,80%{transform:translateX(6px)}}
+.shake{animation:shake 0.6s ease}
+
+/* Red flash overlay */
+.red-flash{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(239,68,68,0.15);z-index:9998;pointer-events:none;animation:flashFade 0.8s ease forwards}
+@keyframes flashFade{0%{opacity:1}100%{opacity:0}}
+
+/* Warning pulse border */
+@keyframes warningPulse{0%,100%{border-color:var(--danger);box-shadow:0 0 8px rgba(239,68,68,0.3)}50%{border-color:rgba(239,68,68,0.4);box-shadow:0 0 20px rgba(239,68,68,0.5)}}
+.warning-pulse{animation:warningPulse 1s ease infinite}
+
+/* Pipeline result banner */
+.pipeline-result{text-align:center;padding:16px;font-size:18px;font-weight:700;border-radius:var(--radius-sm);margin-top:12px;opacity:0;transform:scale(0.8);transition:all 0.4s cubic-bezier(0.34,1.56,0.64,1)}
+.pipeline-result.show{opacity:1;transform:scale(1)}
+.pipeline-result.approved{background:rgba(16,185,129,0.12);border:1px solid var(--success);color:var(--success)}
+.pipeline-result.rejected{background:rgba(239,68,68,0.12);border:2px solid var(--danger);color:var(--danger)}
+
+/* Demo button prominent */
+.btn-demo{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;font-size:16px;font-weight:700;padding:16px 32px;border-radius:var(--radius);border:2px solid rgba(239,68,68,0.4);box-shadow:0 4px 24px rgba(239,68,68,0.3);text-transform:uppercase;letter-spacing:1px;position:relative;overflow:hidden}
+.btn-demo:hover:not(:disabled){background:linear-gradient(135deg,#f55,#ef4444);box-shadow:0 6px 32px rgba(239,68,68,0.5);transform:translateY(-2px)}
+.btn-demo::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:linear-gradient(45deg,transparent,rgba(255,255,255,0.1),transparent);animation:shimmer 3s infinite}
+@keyframes shimmer{0%{transform:translateX(-100%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}
+
+/* Confetti */
+@keyframes confettiFall{0%{transform:translateY(-100vh) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+.confetti-piece{position:fixed;width:10px;height:10px;top:0;z-index:9999;pointer-events:none;animation:confettiFall 3s ease-out forwards}
+
+/* Whitelist green badges */
+.wl-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(16,185,129,0.12);color:var(--success);border:1px solid rgba(16,185,129,0.25)}
+.frozen-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;font-size:12px;font-weight:600;background:rgba(239,68,68,0.12);color:var(--danger);border:1px solid rgba(239,68,68,0.25)}
+.role-badge-admin{background:rgba(212,168,67,0.15);color:var(--accent-gold);border:1px solid rgba(212,168,67,0.3)}
+.role-badge-issuer{background:rgba(59,130,246,0.12);color:var(--info);border:1px solid rgba(59,130,246,0.25)}
+.role-badge-compliance{background:rgba(16,185,129,0.12);color:var(--success);border:1px solid rgba(16,185,129,0.25)}
+
+/* Audit log slide-in animation */
+@keyframes auditSlideIn{0%{transform:translateY(-20px);opacity:0;background:rgba(26,107,255,0.1)}60%{background:rgba(26,107,255,0.08)}100%{transform:translateY(0);opacity:1;background:transparent}}
+.audit-entry-new{animation:auditSlideIn 0.6s ease forwards}
+.audit-severity{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.audit-severity.sev-green{background:var(--success);box-shadow:0 0 6px var(--success)}
+.audit-severity.sev-yellow{background:var(--warning);box-shadow:0 0 6px var(--warning)}
+.audit-severity.sev-red{background:var(--danger);box-shadow:0 0 6px var(--danger)}
+
+/* Reserve gauge enhancements */
+@keyframes needleMove{0%{stroke-dashoffset:408.4}100%{stroke-dashoffset:var(--target-offset)}}
+.gauge-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-top:8px}
+.gauge-badge.backed{background:rgba(16,185,129,0.15);color:var(--success);border:1px solid rgba(16,185,129,0.3)}
+.gauge-badge.underbacked{background:rgba(239,68,68,0.15);color:var(--danger);border:1px solid rgba(239,68,68,0.3);animation:warningPulse 1.5s ease infinite}
 </style>
 </head>
 <body>
@@ -329,6 +409,7 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
                   <div class="lbl" data-i18n="collateral">Collateral</div>
                 </div>
               </div>
+              <div class="gauge-badge backed" id="gaugeBadge">&#10003; FULLY BACKED</div>
             </div>
           </div>
           <div class="card metric">
@@ -463,7 +544,38 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
 
       <!-- ════════ TRANSFERS ════════ -->
       <div class="tab-content" id="tab-transfers">
-        <div class="grid-2 section">
+
+        <!-- PROMINENT DEMO BUTTON -->
+        <div class="card section" style="text-align:center;padding:32px;border:2px solid rgba(239,68,68,0.2);background:linear-gradient(135deg,rgba(239,68,68,0.04),rgba(212,168,67,0.04))">
+          <div style="font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:8px">Experience the Core Value Proposition</div>
+          <div style="font-size:22px;font-weight:700;margin-bottom:6px;letter-spacing:-0.5px">On-Chain Compliance Enforcement</div>
+          <p style="font-size:14px;color:var(--text-secondary);margin-bottom:24px;max-width:600px;margin-left:auto;margin-right:auto">Watch a transfer get <strong style="color:var(--danger)">REJECTED in real-time</strong> because the recipient wallet is not whitelisted. This enforcement happens at the <strong>smart contract level</strong> &mdash; impossible to bypass.</p>
+          <button class="btn btn-demo" onclick="runComplianceDemo()" id="demoBtn">&#9654; Run Compliance Demo</button>
+        </div>
+
+        <!-- PIPELINE VISUALIZATION -->
+        <div class="pipeline" id="transferPipeline" style="display:none">
+          <div class="pipeline-node" id="pipelineSender">
+            <div class="node-icon">&#128100;</div>
+            <div class="node-label">Sender</div>
+            <div class="node-addr" id="pipelineSenderAddr">--</div>
+          </div>
+          <div class="pipeline-arrow" id="pipelineArrow1"></div>
+          <div class="pipeline-node compliance-node" id="pipelineCompliance">
+            <div class="node-icon">&#128737;&#65039;</div>
+            <div class="node-label">Compliance Check</div>
+            <div class="node-addr" id="pipelineStatus" style="color:var(--accent-blue)">Waiting...</div>
+          </div>
+          <div class="pipeline-arrow" id="pipelineArrow2"></div>
+          <div class="pipeline-node" id="pipelineRecipient">
+            <div class="node-icon">&#128100;</div>
+            <div class="node-label">Recipient</div>
+            <div class="node-addr" id="pipelineRecipientAddr">--</div>
+          </div>
+        </div>
+        <div class="pipeline-result" id="pipelineResult"></div>
+
+        <div class="grid-2 section" style="margin-top:24px">
           <div class="card">
             <div class="card-header"><div class="card-title">&#128260; Compliant Transfer</div></div>
             <div class="form-group">
@@ -499,12 +611,7 @@ textarea.form-input{resize:vertical;min-height:60px;font-family:'Inter',sans-ser
           </div>
         </div>
 
-        <div class="card section">
-          <div class="card-header"><div class="card-title">&#9888;&#65039; Compliance Demo: Rejected Transfer</div><span class="badge badge-danger">DEMO</span></div>
-          <p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px">This demonstrates a transfer that gets <strong>REJECTED</strong> because the recipient is not whitelisted. This is the core compliance enforcement mechanism.</p>
-          <button class="btn btn-danger" onclick="demoRejectedTransfer()">&#9888;&#65039; Trigger Rejected Transfer Demo</button>
-          <div class="result-box" id="demoResult"></div>
-        </div>
+        <div class="result-box" id="demoResult" style="margin-bottom:20px"></div>
       </div>
 
       <!-- ════════ COMPLIANCE ════════ -->
@@ -1011,14 +1118,25 @@ async function fetchDemoData() {
       $('rTBills').textContent = '$' + fmtNum(data.reserve.tBills || 0);
       $('rCash').textContent = '$' + fmtNum(data.reserve.cash || 0);
 
-      // Gauge
+      // Gauge — animated needle
       const ratio = Math.min(data.reserve.ratio, 150);
       const circumference = 408.4;
       const offset = circumference - (ratio / 150) * circumference;
       const gaugeColor = ratio >= 100 ? 'var(--success)' : ratio >= 90 ? 'var(--warning)' : 'var(--danger)';
-      $('gaugeCircle').style.strokeDashoffset = offset;
-      $('gaugeCircle').style.stroke = gaugeColor;
+      const gc = $('gaugeCircle');
+      gc.style.transition = 'stroke-dashoffset 1.5s cubic-bezier(0.25,0.46,0.45,0.94), stroke 0.5s ease';
+      gc.style.strokeDashoffset = offset;
+      gc.style.stroke = gaugeColor;
       $('reservePct').style.color = gaugeColor;
+      // Update FULLY BACKED badge
+      const badge = $('gaugeBadge');
+      if (ratio >= 100) {
+        badge.className = 'gauge-badge backed';
+        badge.innerHTML = '&#10003; FULLY BACKED';
+      } else {
+        badge.className = 'gauge-badge underbacked';
+        badge.innerHTML = '&#9888;&#65039; UNDERBACKED';
+      }
     }
 
     renderActivityFeed();
@@ -1070,7 +1188,7 @@ function renderWhitelistTable() {
   el.innerHTML = state.whitelisted.map(addr => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
       <span class="mono" style="font-size:12px">${shortAddr(addr)}</span>
-      <span class="badge badge-success">Active</span>
+      <span class="wl-badge">&#128994; Whitelisted</span>
     </div>
   `).join('');
 }
@@ -1084,7 +1202,7 @@ function renderFrozenTable() {
   el.innerHTML = state.frozen.map(addr => `
     <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
       <span class="mono" style="font-size:12px">${shortAddr(addr)}</span>
-      <span class="badge badge-danger">Frozen</span>
+      <span class="frozen-badge">&#10052;&#65039; Frozen</span>
     </div>
   `).join('');
 }
@@ -1095,13 +1213,22 @@ function renderAuditLog() {
     el.innerHTML = '<div class="empty-state"><div class="empty-text">No audit entries yet</div></div>';
     return;
   }
-  el.innerHTML = state.auditLog.slice().reverse().map(entry => `
-    <div class="audit-entry">
+  const severityMap = {
+    'Transfer Blocked': 'red', 'Account Frozen': 'red', 'Protocol Paused': 'red',
+    'Whitelist Remove': 'yellow', 'Mint Cap Updated': 'yellow', 'Admin Transfer Proposed': 'yellow',
+    'Whitelist Add': 'green', 'Reserve Verified': 'green', 'Account Unfrozen': 'green',
+    'Protocol Unpaused': 'green', 'Admin Transfer Accepted': 'green',
+  };
+  el.innerHTML = state.auditLog.slice().reverse().map((entry, i) => {
+    const sev = severityMap[entry.action] || 'yellow';
+    const isNew = entry._isNew ? ' audit-entry-new' : '';
+    return `<div class="audit-entry${isNew}">
+      <div class="audit-severity sev-${sev}"></div>
       <div class="audit-time">${fmtTime(entry.time)}</div>
       <div class="audit-action">${entry.action}</div>
       <div style="flex:1;color:var(--text-muted);font-size:12px;text-align:right">${entry.detail || ''}</div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function renderKycTracker(entries) {
@@ -1128,10 +1255,11 @@ function renderRoleDirectory(roles) {
     return;
   }
   el.innerHTML = roles.map(r => {
-    const badgeClass = r.role === 'Admin' ? 'badge-gold' : r.role === 'Issuer' ? 'badge-info' : 'badge-warning';
+    const roleIcon = r.role === 'Admin' ? '&#128081;' : r.role === 'Issuer' ? '&#128176;' : '&#128737;&#65039;';
+    const roleClass = r.role === 'Admin' ? 'role-badge-admin' : r.role === 'Issuer' ? 'role-badge-issuer' : 'role-badge-compliance';
     return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)">
       <span class="mono" style="font-size:12px">${shortAddr(r.address)}</span>
-      <span class="badge ${badgeClass}" style="${r.role === 'Admin' ? 'background:rgba(212,168,67,0.15);color:var(--accent-gold)' : ''}">${r.role}</span>
+      <span class="badge ${roleClass}" style="padding:5px 12px;border-radius:16px">${roleIcon} ${r.role}</span>
     </div>`;
   }).join('');
 }
@@ -1274,51 +1402,167 @@ async function executeTransfer() {
     if (!wallet || !recipient || !amount) { toast('Fill all required fields', 'error'); return; }
 
     // Check whitelist first
+    let isWhitelisted = true;
     try {
       const wlCheck = await api(`/api/wallet/${recipient}/whitelist`);
-      if (!wlCheck.isWhitelisted) {
-        showResult('transferResult', 'REJECTED: Recipient ' + shortAddr(recipient) + ' is NOT whitelisted. Transfer blocked by compliance.', true);
-        $('compliancePrecheck').innerHTML = '<span class="badge badge-danger">REJECTED</span> Recipient is not whitelisted';
-        toast('Transfer rejected: recipient not whitelisted', 'error');
-        addTransaction({ type: 'transfer', description: 'Transfer REJECTED (not whitelisted)', amount, from: wallet, to: recipient, address: recipient, status: 'rejected', time: new Date() });
-        return;
-      }
-      $('compliancePrecheck').innerHTML = '<span class="badge badge-success">APPROVED</span> Both parties are whitelisted';
+      isWhitelisted = wlCheck.isWhitelisted;
     } catch (e) {
-      // Demo mode — continue
+      // Demo mode — check local state
+      isWhitelisted = state.whitelisted.includes(recipient);
     }
 
-    const data = await api('/api/tx/transfer', { method: 'POST', body: { wallet, recipient, amount } });
-    showResult('transferResult', 'Transaction built: ' + data.message, false);
-    toast('Transfer prepared', 'success');
+    if (!isWhitelisted) {
+      await runPipelineAnimation(wallet, recipient, amount, true);
+      showResult('transferResult', 'REJECTED: Recipient ' + shortAddr(recipient) + ' is NOT whitelisted. Transfer blocked by compliance.', true);
+      $('compliancePrecheck').innerHTML = '<span class="badge badge-danger">REJECTED</span> Recipient is not whitelisted';
+      return;
+    }
 
-    addTransaction({ type: 'transfer', description: 'Transfer ' + fmtNum(amount) + ' tokens', amount, from: wallet, to: recipient, address: recipient, status: 'confirmed', time: new Date() });
+    // Run approved pipeline
+    await runPipelineAnimation(wallet, recipient, amount, false);
+    $('compliancePrecheck').innerHTML = '<span class="badge badge-success">APPROVED</span> Both parties are whitelisted';
+
+    try {
+      const data = await api('/api/tx/transfer', { method: 'POST', body: { wallet, recipient, amount } });
+      showResult('transferResult', 'Transaction built: ' + data.message, false);
+    } catch (apiErr) {
+      showResult('transferResult', 'Transfer visualized (demo mode)', false);
+    }
   } catch (err) {
     showResult('transferResult', 'Error: ' + err.message, true);
     toast('Transfer failed: ' + err.message, 'error');
   }
 }
 
-async function demoRejectedTransfer() {
+// ── Confetti effect ──
+function spawnConfetti() {
+  const colors = ['#10b981','#3b82f6','#d4a843','#f59e0b','#8b5cf6','#ec4899'];
+  for (let i = 0; i < 60; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.width = (Math.random() * 8 + 5) + 'px';
+    piece.style.height = (Math.random() * 8 + 5) + 'px';
+    piece.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    piece.style.animationDuration = (Math.random() * 2 + 2) + 's';
+    piece.style.animationDelay = (Math.random() * 0.5) + 's';
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 4000);
+  }
+}
+
+// ── Red screen flash ──
+function flashRed() {
+  const overlay = document.createElement('div');
+  overlay.className = 'red-flash';
+  document.body.appendChild(overlay);
+  setTimeout(() => overlay.remove(), 900);
+}
+
+// ── Pipeline demo runner ──
+async function runPipelineAnimation(sender, recipient, amount, shouldReject) {
+  const pipeline = $('transferPipeline');
+  const result = $('pipelineResult');
+  const complianceNode = $('pipelineCompliance');
+  const statusEl = $('pipelineStatus');
+
+  // Reset
+  pipeline.style.display = 'flex';
+  pipeline.className = 'pipeline';
+  result.className = 'pipeline-result';
+  result.textContent = '';
+  complianceNode.classList.remove('scanning');
+  complianceNode.querySelector('.node-icon').innerHTML = '&#128737;&#65039;';
+
+  $('pipelineSenderAddr').textContent = shortAddr(sender);
+  $('pipelineRecipientAddr').textContent = shortAddr(recipient);
+
+  // Smooth scroll to pipeline
+  pipeline.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Phase 1: Start scanning
+  await new Promise(r => setTimeout(r, 400));
+  complianceNode.classList.add('scanning');
+  statusEl.innerHTML = '<span class="scanning-dots">Scanning</span>';
+  statusEl.style.color = 'var(--accent-blue)';
+
+  // Phase 2: Wait for scan
+  await new Promise(r => setTimeout(r, 1800));
+  complianceNode.classList.remove('scanning');
+
+  if (shouldReject) {
+    // REJECTION — dramatic
+    flashRed();
+    pipeline.classList.add('rejected');
+    pipeline.classList.add('shake');
+    pipeline.classList.add('warning-pulse');
+    statusEl.innerHTML = 'BLOCKED';
+    statusEl.style.color = 'var(--danger)';
+
+    $('pipelineCompliance').querySelector('.node-icon').innerHTML = '&#10060;';
+
+    await new Promise(r => setTimeout(r, 200));
+    result.className = 'pipeline-result rejected show';
+    result.innerHTML = '&#10060; TRANSFER REJECTED &mdash; Recipient not whitelisted';
+
+    toast('COMPLIANCE VIOLATION: Transfer blocked by on-chain enforcement', 'error');
+
+    showResult('demoResult',
+      'COMPLIANCE REJECTION\n\n' +
+      'Sender: ' + shortAddr(sender) + ' (Whitelisted)\n' +
+      'Recipient: ' + shortAddr(recipient) + ' (NOT Whitelisted)\n' +
+      'Amount: ' + fmtNum(amount) + ' SUSD\n\n' +
+      'Status: BLOCKED by on-chain compliance check.\n' +
+      'The Solidus smart contract enforces that both sender and recipient must be whitelisted before any transfer can execute. ' +
+      'This is enforced at the protocol level, not application level — making it impossible to bypass.',
+      true
+    );
+
+    addTransaction({ type: 'transfer', description: 'Transfer REJECTED (compliance)', amount, from: sender, to: recipient, address: recipient, status: 'rejected', time: new Date() });
+    addAuditEntry('Transfer Blocked', 'Recipient ' + shortAddr(recipient) + ' not whitelisted. Amount: ' + fmtNum(amount));
+
+    // Remove shake after animation
+    setTimeout(() => pipeline.classList.remove('shake'), 600);
+
+  } else {
+    // APPROVED — celebratory
+    pipeline.classList.add('approved');
+    statusEl.innerHTML = 'VERIFIED';
+    statusEl.style.color = 'var(--success)';
+    $('pipelineCompliance').querySelector('.node-icon').innerHTML = '&#9989;';
+
+    await new Promise(r => setTimeout(r, 200));
+    result.className = 'pipeline-result approved show';
+    result.innerHTML = '&#9989; TRANSFER APPROVED &mdash; Both parties whitelisted';
+
+    spawnConfetti();
+    toast('Transfer approved by compliance check', 'success');
+
+    addTransaction({ type: 'transfer', description: 'Transfer ' + fmtNum(amount) + ' tokens (compliant)', amount, from: sender, to: recipient, address: recipient, status: 'confirmed', time: new Date() });
+    addAuditEntry('Transfer Approved', shortAddr(sender) + ' -> ' + shortAddr(recipient) + ' | ' + fmtNum(amount) + ' SUSD');
+  }
+}
+
+// ── Main demo button handler ──
+async function runComplianceDemo() {
+  const btn = $('demoBtn');
+  btn.disabled = true;
+  btn.textContent = 'Running demo...';
+
   const sender = 'Demo7WhiteListed1111111111111111111111111';
   const recipient = 'NotWhiteListed999999999999999999999999999';
   const amount = 50000;
 
-  showResult('demoResult',
-    'COMPLIANCE REJECTION\n\n' +
-    'Sender: ' + shortAddr(sender) + ' (Whitelisted)\n' +
-    'Recipient: ' + shortAddr(recipient) + ' (NOT Whitelisted)\n' +
-    'Amount: ' + fmtNum(amount) + ' SUSD\n\n' +
-    'Status: BLOCKED by on-chain compliance check.\n' +
-    'The Solidus smart contract enforces that both sender and recipient must be whitelisted before any transfer can execute. ' +
-    'This is enforced at the protocol level, not application level — making it impossible to bypass.',
-    true
-  );
+  await runPipelineAnimation(sender, recipient, amount, true);
 
-  addTransaction({ type: 'transfer', description: 'Transfer REJECTED (compliance)', amount, from: sender, to: recipient, address: recipient, status: 'rejected', time: new Date() });
+  btn.disabled = false;
+  btn.innerHTML = '&#9654; Run Compliance Demo';
+}
 
-  addAuditEntry('Transfer Blocked', 'Recipient ' + shortAddr(recipient) + ' not whitelisted. Amount: ' + fmtNum(amount));
-  toast('Demo: Transfer rejected by compliance', 'error');
+// Legacy alias
+async function demoRejectedTransfer() {
+  await runComplianceDemo();
 }
 
 async function checkWhitelist() {
@@ -1470,8 +1714,14 @@ function addTransaction(tx) {
 }
 
 function addAuditEntry(action, detail) {
-  state.auditLog.push({ action, detail, time: new Date() });
+  // Clear previous _isNew flags
+  state.auditLog.forEach(e => e._isNew = false);
+  state.auditLog.push({ action, detail, time: new Date(), _isNew: true });
   renderAuditLog();
+  // Remove _isNew flag after animation completes
+  setTimeout(() => {
+    state.auditLog.forEach(e => e._isNew = false);
+  }, 700);
 }
 
 // ── Compliance pre-check on input ──
